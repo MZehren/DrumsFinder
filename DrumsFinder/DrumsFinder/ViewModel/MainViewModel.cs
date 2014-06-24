@@ -34,6 +34,29 @@ namespace DrumsFinder.ViewModel
             }
         }
 
+        public TimeSpan CurrentTime
+        {
+            get {
+             return _musicFile.blockAlignReductionStream.CurrentTime; 
+            }
+            set{
+               _musicFile.blockAlignReductionStream.CurrentTime = value;
+            }
+        }
+
+        public float Volume
+        {
+            get
+            {
+                return _musicFile.directSoundOut.Volume;
+            }
+            set
+            {
+                _musicFile.directSoundOut.Volume = value;
+            }
+        }
+
+
         public MainViewModel()
         {
             SetMusicFile = new RelayCommand(PerformSetMusicFile);
@@ -56,15 +79,19 @@ namespace DrumsFinder.ViewModel
             {
                 if (_musicFile != null)
                 {
-                    _musicFile.Stop();
-                    _wave = null;
+                    //_musicFile.Stop();
+                    //_wave = null;
                 }
 
                 _musicFile = new MusicFile(dlg.FileName);
 
-                OnPropertyChanged("Wave");
+
+                //OnPropertyChanged("Wave");
+                OnPropertyChanged("CurrentTime");
+                OnPropertyChanged("Volume");
             }
         }
+
 
         //New action
         public ICommand PlayPause

@@ -11,21 +11,21 @@ namespace DrumsFinder.Model
 {
     public class MusicFile : IDisposable
     {
-        private BlockAlignReductionStream blockAlignReductionStream;
+        public BlockAlignReductionStream blockAlignReductionStream;
         public DirectSoundOut directSoundOut;
-        private WaveStream _waveStream;
+        public WaveStream waveStream;
         private int _bytesPerSample;
 
         public MusicFile(string fileName)
         {
             if (fileName.EndsWith(".mp3"))
             {
-                _waveStream = WaveFormatConversionStream.CreatePcmStream(new Mp3FileReader(fileName));
+                waveStream = WaveFormatConversionStream.CreatePcmStream(new Mp3FileReader(fileName));
 
             }
             else if (fileName.EndsWith(".wav"))
             {
-                _waveStream = new WaveChannel32(new NAudio.Wave.WaveFileReader(fileName));
+                waveStream = new WaveChannel32(new NAudio.Wave.WaveFileReader(fileName));
 
             }
             else
@@ -33,15 +33,16 @@ namespace DrumsFinder.Model
                 throw new InvalidOperationException("Unsupported extension");
             }
 
-            blockAlignReductionStream = new BlockAlignReductionStream(_waveStream);
+            blockAlignReductionStream = new BlockAlignReductionStream(waveStream);
             directSoundOut = new DirectSoundOut();
             directSoundOut.Init(blockAlignReductionStream);
-            _bytesPerSample = (_waveStream.WaveFormat.BitsPerSample / 8) * _waveStream.WaveFormat.Channels;
+            _bytesPerSample = (waveStream.WaveFormat.BitsPerSample / 8) * waveStream.WaveFormat.Channels;
         }
 
         public void Play()
         {
             directSoundOut.Play();
+
         }
 
         public void Pause()
@@ -51,6 +52,7 @@ namespace DrumsFinder.Model
 
         public void PlayPause()
         {
+
             if (directSoundOut.PlaybackState != PlaybackState.Playing)
                 Play();
             else
@@ -86,19 +88,19 @@ namespace DrumsFinder.Model
 
         internal Point[] GetWave(int samplesPerPixel, int xMin, int xMax)
         {
-            if (_waveStream != null)
+            if (waveStream != null)
             {
-                _waveStream.Position = xMin;
+                waveStream.Position = xMin;
 
                 byte[] waveData = new byte[samplesPerPixel * _bytesPerSample];
                 int bytesRead;
                 List<Point> result = new List<Point>();
 
-                while (_waveStream.Position < _waveStream.Length || _waveStream.Position < xMax)
+                while (waveStream.Position < waveStream.Length || waveStream.Position < xMax)
                 {
                     short low = 0;
                     short high = 0;
-                    bytesRead = _waveStream.Read(waveData, 0, samplesPerPixel * _bytesPerSample);
+                    bytesRead = waveStream.Read(waveData, 0, samplesPerPixel * _bytesPerSample);
                     if (bytesRead == 0)
                         break;
                     for (int n = 0; n < bytesRead; n += 2)
@@ -110,8 +112,8 @@ namespace DrumsFinder.Model
                     float lowPercent = ((((float)low) - short.MinValue) / ushort.MaxValue);
                     float highPercent = ((((float)high) - short.MinValue) / ushort.MaxValue);
 
-                    result.Add(new Point(_waveStream.Position, lowPercent));
-                    result.Add(new Point(_waveStream.Position, highPercent));
+                    result.Add(new Point(waveStream.Position, lowPercent));
+                    result.Add(new Point(waveStream.Position, highPercent));
 
                 }
                 return result.ToArray();

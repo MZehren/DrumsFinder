@@ -34,6 +34,18 @@
 				        Margin="5" 
 				        HorizontalAlignment="Left" 
 			        />
+                <TextBox
+                        Text="{Binding Path=CurrentTime}"
+                        Width="60" 
+				        Margin="5" 
+                    />
+                <Slider
+                    Value="{Binding Path=Volume}"
+                    Maximum="1"
+                    Minimum="0"
+                    Width="60"
+                    Margin="5"
+                    />
             </StackPanel>
         </StackPanel>
     </Grid>
