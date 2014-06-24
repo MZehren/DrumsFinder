@@ -1,0 +1,18 @@
+﻿<UserControl x:Class="DrumsFinder.View.MainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converter="clr-namespace:DrumsFinder.View.Converter"
+             Background="gray" >
+
+
+    <UserControl.Resources>
+        <converter:PointsToPathConverter x:Key="PointsToPathConverter"></converter:PointsToPathConverter>
+    </UserControl.Resources>
+    
+    <Path Grid.Row="0" Data="{Binding Path=Wave, Converter={StaticResource PointsToPathConverter}}"
+              Stroke="Black"
+              Stretch="Fill"
+              Fill="AliceBlue">
+    </Path>
+
+</UserControl>
