@@ -3,8 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:DrumsFinder.View" mc:Ignorable="d" x:Class="DrumsFinder.View.MainWindow"
     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+       xmlns:converter="clr-namespace:DrumsFinder.View.Converter"
     Title="DrumsFinder" Height="350" Width="525">
 
+    <Window.Resources>
+        <converter:DoubleToTimeSpanConverter x:Key="DoubleToTimeSpanConverter"></converter:DoubleToTimeSpanConverter>
+    </Window.Resources>
+    
     <Grid >
         <StackPanel >
 				<Menu IsMainMenu="True">
@@ -34,19 +39,26 @@
 				        Margin="5" 
 				        HorizontalAlignment="Left" 
 			        />
-                <TextBox
-                        Text="{Binding Path=CurrentTime}"
+                <!--<TextBox
+                        Text="{Binding Path=CurrentTime, Mode=TwoWay}"
                         Width="60" 
 				        Margin="5" 
-                    />
+                    /> -->
                 <Slider
-                    Value="{Binding Path=Volume}"
-                    Maximum="1"
-                    Minimum="0"
-                    Width="60"
-                    Margin="5"
+                	Value="{Binding Volume, Mode=OneWayToSource, FallbackValue=1}"
+                	Maximum="1"
+                	Minimum="0"
+                    SmallChange="0.5" 
+                	Width="60"
+                	Margin="5"
                     />
             </StackPanel>
+            <Slider
+                	Value="{Binding CurrentTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
+                	Maximum="{Binding TotalTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
+                	IsEnabled="{Binding MusicLoaded}"
+                	Margin="5"
+                    />
         </StackPanel>
     </Grid>
     

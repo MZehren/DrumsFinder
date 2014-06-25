@@ -1,5 +1,6 @@
 ﻿using DrumsFinder.Base;
 using DrumsFinder.Model;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,25 +35,63 @@ namespace DrumsFinder.ViewModel
             }
         }
 
-        public TimeSpan CurrentTime
+
+        public bool MusicLoaded
         {
-            get {
-             return _musicFile.blockAlignReductionStream.CurrentTime; 
-            }
-            set{
-               _musicFile.blockAlignReductionStream.CurrentTime = value;
+            get
+            {
+                return _musicFile != null;
             }
         }
 
+        public TimeSpan CurrentTime
+        {
+            get
+            {
+                if (_musicFile != null)
+                    return _musicFile.audioFileReader.CurrentTime;
+                else
+                    return new TimeSpan();
+            }
+            set
+            {
+
+                if (_musicFile != null)
+                {
+                    _musicFile.audioFileReader.CurrentTime = value;
+                   
+                }
+            }
+        }
+
+        public TimeSpan TotalTime
+        {
+            get
+            {
+                if (_musicFile != null)
+                    return _musicFile.audioFileReader.TotalTime;
+                else
+                    return new TimeSpan();
+            }
+        }
+
+        private float _volume;
         public float Volume
         {
             get
             {
-                return _musicFile.directSoundOut.Volume;
+                return _volume;
             }
             set
             {
-                _musicFile.directSoundOut.Volume = value;
+                if (value > 1 || value < 0)
+                    return;
+
+                _volume = value;
+
+                if (_musicFile != null)
+                    _musicFile.audioFileReader.Volume = value;
+
             }
         }
 
@@ -61,7 +100,7 @@ namespace DrumsFinder.ViewModel
         {
             SetMusicFile = new RelayCommand(PerformSetMusicFile);
 
-           // dragView = new RelayCommand<int>(PerformDragView);
+            // dragView = new RelayCommand<int>(PerformDragView);
         }
 
         //New action
@@ -71,24 +110,32 @@ namespace DrumsFinder.ViewModel
         {
             //Open File
             Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-            dlg.DefaultExt = ".txt";
-            dlg.Filter = "Audio File (*.mp3;*.wav)|*.mp3;*.wav";
+            // dlg.DefaultExt = ".txt";
+            // dlg.Filter = "Audio File (*.mp3;*.wav)|*.mp3;*.wav";
             Nullable<bool> result = dlg.ShowDialog();
 
             if (result == true)
             {
                 if (_musicFile != null)
                 {
-                    //_musicFile.Stop();
-                    //_wave = null;
+                    _musicFile.Stop();
+                    _musicFile = null;
                 }
 
-                _musicFile = new MusicFile(dlg.FileName);
-
-
-                //OnPropertyChanged("Wave");
-                OnPropertyChanged("CurrentTime");
-                OnPropertyChanged("Volume");
+                try
+                {
+                    _musicFile = new MusicFile(dlg.FileName);
+                    this.Volume = Volume;
+                    //OnPropertyChanged("Wave");
+                    OnPropertyChanged("CurrentTime");
+                    OnPropertyChanged("TotalTime");
+                    OnPropertyChanged("MusicLoaded");
+                    //_musicFile.audioFileReader.
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Bad input file");
+                }
             }
         }
 
@@ -99,9 +146,26 @@ namespace DrumsFinder.ViewModel
             get
             {
                 return new RelayCommand(
-                    delegate() { _musicFile.PlayPause(); },
+                    delegate() { 
+                        
+                        if (_musicFile.waveOutDevice.PlaybackState != PlaybackState.Playing)
+                        {
+                            _musicFile.Play();
+                            _musicFile.sampleAggregator.SampleRead += sampleAggregator_SampleRead;
+                        }
+                        else
+                        {
+                            _musicFile.Pause();
+                            _musicFile.sampleAggregator.SampleRead -= sampleAggregator_SampleRead;
+                        }
+                    },
                     delegate() { return _musicFile != null; });
             }
+        }
+
+        void sampleAggregator_SampleRead(object sender, EventArgs e)
+        {
+            OnPropertyChanged("CurrentTime");
         }
 
 
