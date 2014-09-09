@@ -14,24 +14,22 @@ namespace DrumsFinder.ViewModel
     class MainViewModel : ViewModelBase
     {
         private MusicFile _musicFile;
-        private Point[] _wave;
-        public Point[] Wave
+
+        public float[] Wave
         {
             get
             {
-                if (_wave == null || _wave.Length == 0)
-                {
-                    Wave = _musicFile.GetWave(50000, 0, Int32.MaxValue);
-                }
-                return _wave;
-            }
+                if (_musicFile.AudioFileReader == null)
+                    return null;
 
-            private set
-            {
-                if (value == null)
-                    _wave = new Point[0];
-                else
-                    _wave = value;
+                TimeSpan before = CurrentTime;
+
+                float[] samples = new float[_musicFile.AudioFileReader.SamplesNumber];
+                _musicFile.AudioFileReader.Read(samples, 0, _musicFile.AudioFileReader.SamplesNumber);
+               
+                CurrentTime = before;
+
+                return samples;
             }
         }
 
@@ -49,7 +47,7 @@ namespace DrumsFinder.ViewModel
             get
             {
                 if (_musicFile != null)
-                    return _musicFile.audioFileReader.CurrentTime;
+                    return _musicFile.AudioFileReader.CurrentTime;
                 else
                     return new TimeSpan();
             }
@@ -58,7 +56,7 @@ namespace DrumsFinder.ViewModel
 
                 if (_musicFile != null)
                 {
-                    _musicFile.audioFileReader.CurrentTime = value;
+                    _musicFile.AudioFileReader.CurrentTime = value;
                    
                 }
             }
@@ -69,7 +67,7 @@ namespace DrumsFinder.ViewModel
             get
             {
                 if (_musicFile != null)
-                    return _musicFile.audioFileReader.TotalTime;
+                    return _musicFile.AudioFileReader.TotalTime;
                 else
                     return new TimeSpan();
             }
@@ -90,16 +88,18 @@ namespace DrumsFinder.ViewModel
                 _volume = value;
 
                 if (_musicFile != null)
-                    _musicFile.audioFileReader.Volume = value;
+                    _musicFile.AudioFileReader.Volume = value;
 
             }
         }
 
+        public Partition Partition { get; set; }
 
         public MainViewModel()
         {
             SetMusicFile = new RelayCommand(PerformSetMusicFile);
-
+            Partition = new Partition();
+            
             // dragView = new RelayCommand<int>(PerformDragView);
         }
 
@@ -125,8 +125,9 @@ namespace DrumsFinder.ViewModel
                 try
                 {
                     _musicFile = new MusicFile(dlg.FileName);
+
                     this.Volume = Volume;
-                    //OnPropertyChanged("Wave");
+                    OnPropertyChanged("Wave");
                     OnPropertyChanged("CurrentTime");
                     OnPropertyChanged("TotalTime");
                     OnPropertyChanged("MusicLoaded");
@@ -148,15 +149,15 @@ namespace DrumsFinder.ViewModel
                 return new RelayCommand(
                     delegate() { 
                         
-                        if (_musicFile.waveOutDevice.PlaybackState != PlaybackState.Playing)
+                        if (_musicFile.WaveOutDevice.PlaybackState != PlaybackState.Playing)
                         {
                             _musicFile.Play();
-                            _musicFile.sampleAggregator.SampleRead += sampleAggregator_SampleRead;
+                            _musicFile.AudioFileReader.SampleRead += sampleAggregator_SampleRead;
                         }
                         else
                         {
                             _musicFile.Pause();
-                            _musicFile.sampleAggregator.SampleRead -= sampleAggregator_SampleRead;
+                            _musicFile.AudioFileReader.SampleRead -= sampleAggregator_SampleRead;
                         }
                     },
                     delegate() { return _musicFile != null; });

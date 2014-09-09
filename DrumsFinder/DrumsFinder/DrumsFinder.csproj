@@ -72,7 +72,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="View\MainView.xaml">
+    <Page Include="View\MeasureView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\WaveView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -86,22 +90,33 @@
     </Compile>
     <Compile Include="Base\RelayCommand.cs" />
     <Compile Include="Base\ObservableObject.cs" />
+    <Compile Include="Model\Measure.cs" />
     <Compile Include="Model\MusicFile.cs" />
+    <Compile Include="Model\Note.cs" />
+    <Compile Include="Model\Partition.cs" />
     <Compile Include="Model\SampleAggregator.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\SpectrumViewModel.cs" />
     <Compile Include="ViewModel\WaveViewModel.cs" />
     <Compile Include="Base\ViewModelBase.cs" />
     <Compile Include="View\Behavior\MainViewBehavior.cs" />
+    <Compile Include="View\Converter\DoubleToNoteDurationConverter.cs" />
     <Compile Include="View\Converter\DoubleToTimeSpanConverter.cs" />
-    <Compile Include="View\Converter\PointsToPathConverter.cs" />
-    <Compile Include="View\MainView.xaml.cs">
-      <DependentUpon>MainView.xaml</DependentUpon>
+    <Compile Include="View\Converter\FloatsToPathConverter.cs" />
+    <Compile Include="View\MeasureView.xaml.cs">
+      <DependentUpon>MeasureView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\WaveView.xaml.cs">
+      <DependentUpon>WaveView.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\svg\Dictionary1.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

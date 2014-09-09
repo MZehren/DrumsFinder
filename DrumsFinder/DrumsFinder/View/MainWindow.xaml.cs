@@ -24,7 +24,6 @@ namespace DrumsFinder.View
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new MainViewModel();
         }
 
 

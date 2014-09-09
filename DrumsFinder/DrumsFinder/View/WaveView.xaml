@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DrumsFinder.View.MainView"
+﻿<UserControl x:Class="DrumsFinder.View.WaveView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converter="clr-namespace:DrumsFinder.View.Converter"
@@ -6,10 +6,10 @@
 
 
     <UserControl.Resources>
-        <converter:PointsToPathConverter x:Key="PointsToPathConverter"></converter:PointsToPathConverter>
+        <converter:FloatsToPathConverter x:Key="FloatsToPathConverter"></converter:FloatsToPathConverter>
     </UserControl.Resources>
-    
-    <Path Grid.Row="0" Data="{Binding Path=Wave, Converter={StaticResource PointsToPathConverter}}"
+
+    <Path Grid.Row="0" Data="{Binding Path=Wave, Converter={StaticResource FloatsToPathConverter}}"
               Stroke="Black"
               Stretch="Fill"
               Fill="AliceBlue">

@@ -9,23 +9,22 @@ using System.Windows.Media;
 
 namespace DrumsFinder.View.Converter
 {
-    [ValueConversion(typeof(Point[]), typeof(Geometry))]
-    class PointsToPathConverter : IValueConverter
+    [ValueConversion(typeof(float[]), typeof(Geometry))]
+    class FloatsToPathConverter : IValueConverter
     {
         #region IValueConverter Members
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            Point[] points = (Point[])value;
+            float[] points = (float[])value;
             if (points.Length > 0)
             {
-                Point start = points[0];
                 List<LineSegment> segments = new List<LineSegment>();
-                for (int i = 1; i < points.Length; i++)
+                for (int i = 1; i < points.Length; i+=10)
                 {
-                    segments.Add(new LineSegment(points[i], true));
+                    segments.Add(new LineSegment(new Point(i, points[i]), true));
                 }
-                PathFigure figure = new PathFigure(start, segments, false); //true if closed
+                PathFigure figure = new PathFigure(new Point(), segments, false); //true if closed
                 PathGeometry geometry = new PathGeometry();
                 geometry.Figures.Add(figure);
                 return geometry;

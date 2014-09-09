@@ -2,29 +2,50 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:DrumsFinder.View" mc:Ignorable="d" x:Class="DrumsFinder.View.MainWindow"
-    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-       xmlns:converter="clr-namespace:DrumsFinder.View.Converter"
-    Title="DrumsFinder" Height="350" Width="525">
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ViewModel="clr-namespace:DrumsFinder.ViewModel"
+        xmlns:converter="clr-namespace:DrumsFinder.View.Converter"
+    Title="DrumsFinder" Height="536" Width="525">
 
     <Window.Resources>
         <converter:DoubleToTimeSpanConverter x:Key="DoubleToTimeSpanConverter"></converter:DoubleToTimeSpanConverter>
     </Window.Resources>
+    <Window.DataContext>
+        <ViewModel:MainViewModel/>
+    </Window.DataContext>
     
     <Grid >
         <StackPanel >
-				<Menu IsMainMenu="True">
-					<MenuItem Header="_File">
-						<MenuItem Header="_Open..." Command="{Binding SetMusicFile}"/>
-						<Separator />
-                        <MenuItem Header="_Save As..." />
-					    </MenuItem>
-					<MenuItem Header="_Help" />
-				</Menu>
+            <Menu IsMainMenu="True">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_Open..." Command="{Binding SetMusicFile}"/>
+                    <Separator />
+                    <MenuItem Header="_Save As..." />
+                </MenuItem>
+                <MenuItem Header="_Help" />
+            </Menu>
 
-            <local:MainView Height="250" />
+            <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
 
-            
-            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                <StackPanel>
+                <local:WaveView Height="100" />
+
+                <ItemsControl ItemsSource="{Binding Path=Partition.Measures}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Height="100" Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:MeasureView />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Orientation="Horizontal">
                 <Button 
 				        Command="{Binding Path=PlayPause}"
 				        Content="Play/Pause" 
@@ -52,14 +73,22 @@
                 	Width="60"
                 	Margin="5"
                     />
+                <Label Content="{Binding CurrentTime}"/>
+                <Label Content="{Binding TotalTime}"/>
             </StackPanel>
+
+
             <Slider
-                	Value="{Binding CurrentTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
-                	Maximum="{Binding TotalTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
-                	IsEnabled="{Binding MusicLoaded}"
-                	Margin="5"
-                    />
+                Value="{Binding CurrentTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
+                Maximum="{Binding TotalTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
+                IsEnabled="{Binding MusicLoaded}"
+                Margin="5"
+                TickFrequency="10"
+                />
+
+
+
         </StackPanel>
     </Grid>
-    
+
 </Window>

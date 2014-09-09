@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 D:\bibliothèque\Documents\GitHub\DrumsFinder\DrumsFinder\DrumsFinder\App.xaml
-22134533724
+41676640649
 
-21877342888
+26-168691056
 131145122881
-View\MainView.xaml;View\MainWindow.xaml;
+View\MeasureView.xaml;View\WaveView.xaml;View\MainWindow.xaml;View\svg\Dictionary1.xaml;
 
-False
+True
 

@@ -7,30 +7,39 @@ using System.Threading.Tasks;
 
 namespace DrumsFinder.Model
 {
-    public class SampleAggregator : IWaveProvider
+    public class SampleAggregator : AudioFileReader
     {
-        private IWaveProvider _source;
         public event EventHandler<EventArgs> SampleRead;
 
-        public SampleAggregator(IWaveProvider Source)
-        {
-            _source = Source;
+        public SampleAggregator(string fileName)
+            : base(fileName)
+        { }
 
+        public int SamplesNumber
+        {
+            get
+            {
+                return this.WaveFormat.SampleRate * this.TotalTime.Seconds;
+            }
         }
 
-        public WaveFormat WaveFormat
+        public int BytesPerSample
         {
-            get { return _source.WaveFormat; }
+            get
+            {
+                return (this.WaveFormat.BitsPerSample / 8) * this.WaveFormat.Channels;
+            }
         }
 
-        public int Read(byte[] buffer, int offset, int count)
+        override public int Read(byte[] buffer, int offset, int count)
         {
             if (SampleRead != null)
             {
                 SampleRead(this, new EventArgs());
             }
 
-            return _source.Read(buffer, offset, count);
+            return base.Read(buffer, offset, count);
         }
+
     }
 }

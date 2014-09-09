@@ -12,79 +12,48 @@ namespace DrumsFinder.Model
 {
     public class MusicFile : IDisposable
     {
-        //public BlockAlignReductionStream blockAlignReductionStream;
-        //public DirectSoundOut directSoundOut;
-        //public WaveStream waveStream;
-        //public MeteringSampleProvider MeteringSampleProvider;
+        public SampleAggregator AudioFileReader;
+        public IWavePlayer WaveOutDevice;
 
-        public AudioFileReader audioFileReader;
-        public IWavePlayer waveOutDevice;
-        public SampleAggregator sampleAggregator;
-        private int _bytesPerSample;
+
 
         public MusicFile(string fileName)
         {
-   
-               
-                audioFileReader = new AudioFileReader(fileName);
-                sampleAggregator = new SampleAggregator(audioFileReader);
-                waveOutDevice = new WaveOut();
-                waveOutDevice.Init(sampleAggregator);
 
-                //if (fileName.EndsWith(".mp3"))
-                //{
+            AudioFileReader = new SampleAggregator(fileName);
+            WaveOutDevice = new WaveOut();
+            WaveOutDevice.Init(AudioFileReader);
 
-                //    waveStream = WaveFormatConversionStream.CreatePcmStream(new Mp3FileReader(fileName));
-
-                //}
-                //else if (fileName.EndsWith(".wav"))
-                //{
-                //    waveStream = new WaveChannel32(new NAudio.Wave.WaveFileReader(fileName));
-
-                //}
-                //else
-                //{
-                //    throw new InvalidOperationException("Unsupported extension");
-                //}
-
-                //blockAlignReductionStream = new BlockAlignReductionStream(waveStream);
-                //directSoundOut = new DirectSoundOut();
-                //meteringSampleProvider = new MeteringSampleProvider(new WaveChannel32(waveStream));
-                //directSoundOut.Init(blockAlignReductionStream);
-
-                _bytesPerSample = (audioFileReader.WaveFormat.BitsPerSample / 8) * audioFileReader.WaveFormat.Channels;
-            
-            }
+        }
 
         public void Play()
         {
-            waveOutDevice.Play();
-
+            WaveOutDevice.Play();
         }
 
         public void Pause()
         {
-            waveOutDevice.Pause();
+            WaveOutDevice.Pause();
         }
 
         public void Stop()
         {
-            waveOutDevice.Stop();
+            WaveOutDevice.Stop();
         }
 
         private void _wavDispose()
         {
-            if (waveOutDevice != null)
+            if (WaveOutDevice != null)
             {
-                if (waveOutDevice.PlaybackState == PlaybackState.Playing)
-                    waveOutDevice.Stop();
-                waveOutDevice.Dispose();
-                waveOutDevice = null;
+                if (WaveOutDevice.PlaybackState == PlaybackState.Playing)
+                    WaveOutDevice.Stop();
+                WaveOutDevice.Dispose();
+                WaveOutDevice = null;
             }
-            if (audioFileReader != null)
+            if (AudioFileReader != null)
             {
-                audioFileReader.Dispose();
-                audioFileReader = null;
+                AudioFileReader.Dispose();
+                AudioFileReader = null;
             }
         }
 
@@ -126,7 +95,7 @@ namespace DrumsFinder.Model
             //    return result.ToArray();
             //}
             //else
-                return null;
+            return null;
         }
     }
 }

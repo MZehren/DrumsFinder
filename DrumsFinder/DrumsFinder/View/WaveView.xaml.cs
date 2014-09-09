@@ -18,9 +18,9 @@ namespace DrumsFinder.View
     /// <summary>
     /// Logique d'interaction pour MainView.xaml
     /// </summary>
-    public partial class MainView : UserControl
+    public partial class WaveView : UserControl
     {
-        public MainView()
+        public WaveView()
         {
             InitializeComponent();
             
