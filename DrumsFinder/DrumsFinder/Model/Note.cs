@@ -1,8 +1,11 @@
-﻿using System;
+﻿using DrumsFinder.Base;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace DrumsFinder.Model
 {
@@ -40,7 +43,7 @@ namespace DrumsFinder.Model
 
     public class Note
     {
-
+        private Measure _parent;
         public NoteKind Kind { get; set; }
         public NoteDuration Duration { get; set; }
         public Double Length
@@ -51,17 +54,33 @@ namespace DrumsFinder.Model
             }
         }
 
-
         public bool Doted { get; set; }
         public TimeDivision Division { get; set; }
 
+        //public double Length
+        //{
+        //    get
+        //    {
+        //        return Length / ((double)Tempo / (4 * 60));
+        //    }
+        //}
 
-        public Note(NoteKind Kind, NoteDuration Duration)
+        public ICommand Play
+        {
+            get
+            {
+                return new RelayCommand(
+                    delegate()
+                    {
+                        AudioPlayBack.AddSound(this.Kind);
+                    });
+            }
+        }
+
+        public Note(NoteKind Kind, NoteDuration Duration, Measure Parent)
         {
             this.Duration = Duration;
             this.Kind = Kind;
         }
-
-
     }
 }

@@ -19,14 +19,14 @@ namespace DrumsFinder.View.Converter
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             if (value != null)
-                return ((TimeSpan)value).TotalMilliseconds;
+                return ((TimeSpan)value).TotalSeconds;
             else
                 return 0;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return new TimeSpan((long)((Double)value) * 10000);
+            return new TimeSpan((long)((Double)value) * 10000000);
 
         }
     }

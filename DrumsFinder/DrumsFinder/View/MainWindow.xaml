@@ -7,65 +7,84 @@
         xmlns:converter="clr-namespace:DrumsFinder.View.Converter"
     Title="DrumsFinder" Height="536" Width="525">
 
-    <Window.Resources>
-        <converter:DoubleToTimeSpanConverter x:Key="DoubleToTimeSpanConverter"></converter:DoubleToTimeSpanConverter>
-    </Window.Resources>
-    <Window.DataContext>
-        <ViewModel:MainViewModel/>
-    </Window.DataContext>
-    
-    <Grid >
-        <StackPanel >
-            <Menu IsMainMenu="True">
-                <MenuItem Header="_File">
-                    <MenuItem Header="_Open..." Command="{Binding SetMusicFile}"/>
-                    <Separator />
-                    <MenuItem Header="_Save As..." />
-                </MenuItem>
-                <MenuItem Header="_Help" />
-            </Menu>
+  <Window.Resources>
+    <converter:DoubleToTimeSpanConverter x:Key="DoubleToTimeSpanConverter"/>
+    <converter:VisibilityToTimeSpanConverter x:Key="VisibilityToTimeSpanConverter" />
+  </Window.Resources>
+  <Window.DataContext>
+    <ViewModel:MainViewModel/>
+  </Window.DataContext>
 
-            <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
+  <Grid >
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="202*"/>
+      <ColumnDefinition Width="315*"/>
+    </Grid.ColumnDefinitions>
+    <StackPanel Grid.ColumnSpan="2" >
+      <Menu IsMainMenu="True">
+        <MenuItem Header="_File">
+          <MenuItem Header="_Open..." Command="{Binding SetMusicFile}"/>
+          <Separator />
+          <MenuItem Header="_Save As..." />
+        </MenuItem>
+        <MenuItem Header="_Help" />
+      </Menu>
 
-                <StackPanel>
-                <local:WaveView Height="100" />
+      <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden" Name="scrollViewer">
 
-                <ItemsControl ItemsSource="{Binding Path=Partition.Measures}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Height="100" Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <local:MeasureView />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                </StackPanel>
-            </ScrollViewer>
+        <Grid Name="grid">
+          <Grid.LayoutTransform>
+            <TransformGroup>
+              <ScaleTransform x:Name="scaleTransform"/>
+            </TransformGroup>
+          </Grid.LayoutTransform>
 
-            <StackPanel Orientation="Horizontal">
-                <Button 
+          <StackPanel>
+            <local:WaveView x:Name="waveView" Height="100" Width="{Binding TotalTime, Converter={StaticResource DoubleToTimeSpanConverter}}" HorizontalAlignment="Left" />
+
+            <ItemsControl ItemsSource="{Binding Path=Partition.Measures}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Height="100" Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <local:MeasureView Width="{Binding Duration}"/>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+
+          <Line Stroke="black" Y1="0" Y2="200" 
+                X1="{Binding CurrentTime, Converter={StaticResource DoubleToTimeSpanConverter}}"  
+                X2="{Binding CurrentTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
+                Visibility="{Binding CurrentTime, Converter={StaticResource VisibilityToTimeSpanConverter}}"/>
+          <Line Stroke="Orange" Y1="0" Y2="200" 
+                X1="{Binding StartSelect, Converter={StaticResource DoubleToTimeSpanConverter}}" 
+                X2="{Binding StartSelect, Converter={StaticResource DoubleToTimeSpanConverter}}"
+                Visibility="{Binding StartSelect, Converter={StaticResource VisibilityToTimeSpanConverter}}"/>
+          <Line Stroke="Orange" Y1="0" Y2="200" 
+                X1="{Binding EndSelect, Converter={StaticResource DoubleToTimeSpanConverter}}" 
+                X2="{Binding EndSelect, Converter={StaticResource DoubleToTimeSpanConverter}}"
+                Visibility="{Binding EndSelect, Converter={StaticResource VisibilityToTimeSpanConverter}}"/>
+        </Grid>
+      </ScrollViewer>
+
+      <StackPanel Orientation="Horizontal">
+        <Button 
 				        Command="{Binding Path=PlayPause}"
 				        Content="Play/Pause" 
 				        Width="60" 
 				        Margin="5" 
 				        HorizontalAlignment="Left" 
 			        />
-                <Button 
-				        Command=""
-				        Content="Stop" 
-				        Width="60" 
-				        Margin="5" 
-				        HorizontalAlignment="Left" 
-			        />
-                <!--<TextBox
+        <!--<TextBox
                         Text="{Binding Path=CurrentTime, Mode=TwoWay}"
                         Width="60" 
 				        Margin="5" 
                     /> -->
-                <Slider
+        <Slider
                 	Value="{Binding Volume, Mode=OneWayToSource, FallbackValue=1}"
                 	Maximum="1"
                 	Minimum="0"
@@ -73,12 +92,15 @@
                 	Width="60"
                 	Margin="5"
                     />
-                <Label Content="{Binding CurrentTime}"/>
-                <Label Content="{Binding TotalTime}"/>
-            </StackPanel>
+        <Label Content="{Binding CurrentTime}"/>
+        <Label Content="{Binding TotalTime}"/>
+        <TextBox  Text="{Binding Partition.Tempo}"/>
+        <TextBox Text="{Binding Partition.TimeSignature}" />
+      </StackPanel>
 
 
-            <Slider
+      <Slider
+                x:Name="timeLine"
                 Value="{Binding CurrentTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
                 Maximum="{Binding TotalTime, Converter={StaticResource DoubleToTimeSpanConverter}}"
                 IsEnabled="{Binding MusicLoaded}"
@@ -88,7 +110,7 @@
 
 
 
-        </StackPanel>
-    </Grid>
+    </StackPanel>
+  </Grid>
 
 </Window>

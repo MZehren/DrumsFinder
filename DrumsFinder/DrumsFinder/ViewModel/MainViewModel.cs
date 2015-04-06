@@ -11,66 +11,85 @@ using System.Windows.Input;
 
 namespace DrumsFinder.ViewModel
 {
-    class MainViewModel : ViewModelBase
+    class MainViewModel : ObservableObject
     {
-        private MusicFile _musicFile;
+        // TODO put this inside a class ?
+        private SampleAggregator _sampleAggregator;
 
         public float[] Wave
         {
             get
             {
-                if (_musicFile.AudioFileReader == null)
-                    return null;
+                if (_sampleAggregator == null)
+                    return new float[0];
 
-                TimeSpan before = CurrentTime;
+                TimeSpan before = CurrentTime.Value;
 
-                float[] samples = new float[_musicFile.AudioFileReader.SamplesNumber];
-                _musicFile.AudioFileReader.Read(samples, 0, _musicFile.AudioFileReader.SamplesNumber);
-               
+                float[] samples = new float[_sampleAggregator.SamplesNumber];
+                _sampleAggregator.Read(samples, 0, _sampleAggregator.SamplesNumber);
+
                 CurrentTime = before;
 
                 return samples;
             }
         }
 
-
         public bool MusicLoaded
         {
             get
             {
-                return _musicFile != null;
+                return _sampleAggregator != null;
             }
         }
 
-        public TimeSpan CurrentTime
+        public TimeSpan? CurrentTime
         {
             get
             {
-                if (_musicFile != null)
-                    return _musicFile.AudioFileReader.CurrentTime;
+                if (_sampleAggregator != null)
+                    return _sampleAggregator.CurrentTime;
                 else
-                    return new TimeSpan();
+                    return null;
             }
             set
             {
 
-                if (_musicFile != null)
+                if (_sampleAggregator != null)
                 {
-                    _musicFile.AudioFileReader.CurrentTime = value;
-                   
+                    _sampleAggregator.CurrentTime = value.Value;
                 }
             }
         }
 
-        public TimeSpan TotalTime
+        public TimeSpan? TotalTime
         {
             get
             {
-                if (_musicFile != null)
-                    return _musicFile.AudioFileReader.TotalTime;
+                if (_sampleAggregator != null)
+                    return _sampleAggregator.TotalTime;
                 else
-                    return new TimeSpan();
+                    return null;
             }
+        }
+
+
+        private TimeSpan? _startSelect;
+        public TimeSpan? StartSelect
+        {
+            get { return _startSelect; }
+            set
+            {
+                _startSelect = value;
+                CurrentTime = value;
+            }
+        }
+
+
+        private TimeSpan? _endSelect;
+        public TimeSpan? EndSelect
+        {
+            get { return _endSelect; }
+            set { _endSelect = value; }
         }
 
         private float _volume;
@@ -87,11 +106,13 @@ namespace DrumsFinder.ViewModel
 
                 _volume = value;
 
-                if (_musicFile != null)
-                    _musicFile.AudioFileReader.Volume = value;
+                if (_sampleAggregator != null)
+                    _sampleAggregator.Volume = value;
 
             }
         }
+
+        public bool Playing { get; set; }
 
         public Partition Partition { get; set; }
 
@@ -99,7 +120,7 @@ namespace DrumsFinder.ViewModel
         {
             SetMusicFile = new RelayCommand(PerformSetMusicFile);
             Partition = new Partition();
-            
+
             // dragView = new RelayCommand<int>(PerformDragView);
         }
 
@@ -116,26 +137,29 @@ namespace DrumsFinder.ViewModel
 
             if (result == true)
             {
-                if (_musicFile != null)
+                if (_sampleAggregator != null)
                 {
-                    _musicFile.Stop();
-                    _musicFile = null;
+                    _sampleAggregator.SampleRead -= sampleAggregator_SampleRead;
+                    AudioPlayBack.MixingSampleProvider.RemoveMixerInput(_sampleAggregator as ISampleProvider);
                 }
 
+                //TODO try catch here ?
                 try
                 {
-                    _musicFile = new MusicFile(dlg.FileName);
+                    _sampleAggregator = AudioPlayBack.LoadSound(dlg.FileName);
+                    _sampleAggregator.SampleRead += sampleAggregator_SampleRead;
 
+                    this.Playing = false;
                     this.Volume = Volume;
-                    OnPropertyChanged("Wave");
-                    OnPropertyChanged("CurrentTime");
-                    OnPropertyChanged("TotalTime");
-                    OnPropertyChanged("MusicLoaded");
+                    RaisePropertyChangedEvent("Wave");
+                    RaisePropertyChangedEvent("CurrentTime");
+                    RaisePropertyChangedEvent("TotalTime");
+                    RaisePropertyChangedEvent("MusicLoaded");
                     //_musicFile.audioFileReader.
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-                    Console.WriteLine("Bad input file");
+                    Console.WriteLine("Bad input file " + e);
                 }
             }
         }
@@ -147,36 +171,30 @@ namespace DrumsFinder.ViewModel
             get
             {
                 return new RelayCommand(
-                    delegate() { 
-                        
-                        if (_musicFile.WaveOutDevice.PlaybackState != PlaybackState.Playing)
+                    delegate()
+                    {
+                        // TODO Enable playing and pausing (as well as changing the time) of the music 
+                        if (this.Playing)
                         {
-                            _musicFile.Play();
-                            _musicFile.AudioFileReader.SampleRead += sampleAggregator_SampleRead;
+                            AudioPlayBack.MixingSampleProvider.RemoveMixerInput(_sampleAggregator as ISampleProvider);
+                            this.Playing = false;
                         }
                         else
                         {
-                            _musicFile.Pause();
-                            _musicFile.AudioFileReader.SampleRead -= sampleAggregator_SampleRead;
+                            AudioPlayBack.MixingSampleProvider.AddMixerInput(_sampleAggregator as IWaveProvider);
+                            this.Playing = true;
                         }
                     },
-                    delegate() { return _musicFile != null; });
+                    delegate() { return _sampleAggregator != null || Partition != null; });
             }
         }
 
         void sampleAggregator_SampleRead(object sender, EventArgs e)
         {
-            OnPropertyChanged("CurrentTime");
+            if (CurrentTime > EndSelect)
+                CurrentTime = StartSelect;
+
+            RaisePropertyChangedEvent("CurrentTime");
         }
-
-
-        //New action
-        //public ICommand dragView { get; private set; }
-
-        //private void PerformDragView(int x)
-        //{
-        //    Wave = _musicFile.GetWave(x, 0, Int32.MaxValue);
-        //    OnPropertyChanged("Wave");
-        //}
     }
 }

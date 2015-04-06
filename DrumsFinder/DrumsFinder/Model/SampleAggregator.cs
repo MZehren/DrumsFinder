@@ -19,7 +19,7 @@ namespace DrumsFinder.Model
         {
             get
             {
-                return this.WaveFormat.SampleRate * this.TotalTime.Seconds;
+                return (int)(this.WaveFormat.SampleRate * this.TotalTime.TotalSeconds);
             }
         }
 
@@ -41,5 +41,14 @@ namespace DrumsFinder.Model
             return base.Read(buffer, offset, count);
         }
 
+        //override public int Read(float[] buffer, int offset, int count)
+        //{
+        //    if (SampleRead != null)
+        //    {
+        //        SampleRead(this, new EventArgs());
+        //    }
+
+        //    return base.Read(buffer, offset, count);
+        //}
     }
 }

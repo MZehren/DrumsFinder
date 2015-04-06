@@ -20,9 +20,11 @@ namespace DrumsFinder.View.Converter
             if (points.Length > 0)
             {
                 List<LineSegment> segments = new List<LineSegment>();
-                for (int i = 1; i < points.Length; i+=10)
+                int j = 0;
+                for (int i = 1; i < points.Length; i+=44100)
                 {
-                    segments.Add(new LineSegment(new Point(i, points[i]), true));
+                    j++;
+                    segments.Add(new LineSegment(new Point(j, points[i]), true));
                 }
                 PathFigure figure = new PathFigure(new Point(), segments, false); //true if closed
                 PathGeometry geometry = new PathGeometry();

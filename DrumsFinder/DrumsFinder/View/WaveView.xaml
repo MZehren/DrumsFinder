@@ -12,7 +12,7 @@
     <Path Grid.Row="0" Data="{Binding Path=Wave, Converter={StaticResource FloatsToPathConverter}}"
               Stroke="Black"
               Stretch="Fill"
-              Fill="AliceBlue">
+    >
     </Path>
 
 </UserControl>

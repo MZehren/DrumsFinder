@@ -28,8 +28,8 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
 
-                <Button>
-                    <TextBlock Text="{Binding Path=Kind}" Width="{Binding Path=Length}"/>
+                <Button Command="{Binding Path=Play}" Width="{Binding Path=Length}">
+                    <TextBlock Text="{Binding Path=Kind}" />
                 </Button>
                 <!--<Path Data="{Binding Data, Source={StaticResource quarter}}" Fill="Black" Width="{Binding Duration, Converter={StaticResource DoubleToNoteDurationConverter}}"  >
                         <Path.LayoutTransform>

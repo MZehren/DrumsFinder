@@ -46,8 +46,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Laurent Bugnion (GalaSoft)\Mvvm Light Toolkit\Binaries\WPF45\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio">
-      <HintPath>..\..\DrumRecognition\naudio\NAudio.dll</HintPath>
+    <Reference Include="NAudio, Version=1.7.0.15, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\NAudio\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -91,15 +92,15 @@
     <Compile Include="Base\RelayCommand.cs" />
     <Compile Include="Base\ObservableObject.cs" />
     <Compile Include="Model\Measure.cs" />
-    <Compile Include="Model\MusicFile.cs" />
+    <Compile Include="Model\AudioPlayBack.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\Partition.cs" />
     <Compile Include="Model\SampleAggregator.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\SpectrumViewModel.cs" />
     <Compile Include="ViewModel\WaveViewModel.cs" />
-    <Compile Include="Base\ViewModelBase.cs" />
     <Compile Include="View\Behavior\MainViewBehavior.cs" />
+    <Compile Include="View\Converter\VisibilityToTimeSpanConverter.cs" />
     <Compile Include="View\Converter\DoubleToNoteDurationConverter.cs" />
     <Compile Include="View\Converter\DoubleToTimeSpanConverter.cs" />
     <Compile Include="View\Converter\FloatsToPathConverter.cs" />
