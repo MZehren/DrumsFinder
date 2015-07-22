@@ -1,5 +1,19 @@
 <div ng-controller="PartitionController">
-	<div ng-repeat="measure in partition">
-		{{measure.TimeSignature.BeatNumber}}
-	</div>
+
+  	<div class="btn-group" >
+        <button type="button" class="btn btn-default" ng-model="partition.Play"  btn-checkbox>
+        	<i class="fa fa-play" ng-if="!partition.Play"></i>
+        	<i class="fa fa-pause" ng-if="partition.Play"></i>
+        </button>
+
+        <button type="button" class="btn btn-default" ng-click="partition.Stop()">
+        	<i class="fa fa-stop"></i>
+        </button>
+
+        <button type="button" class="btn btn-default" ng-model="partition.Loop"  btn-checkbox>
+          	<i class="fa fa-retweet"></i>
+        </button>
+
+    </div>
+
 </div>

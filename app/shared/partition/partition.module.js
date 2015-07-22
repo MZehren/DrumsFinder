@@ -1,1 +1,1 @@
-angular.module('partition', []);
+angular.module('partition', ['ui.bootstrap']);
