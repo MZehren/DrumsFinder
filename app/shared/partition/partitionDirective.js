@@ -7,12 +7,7 @@ angular.module('partition').directive('partitionDirective', function () {
             .append("svg")
 
 
-
-       
-
-        var staff = null
-
-     //    var bars = d3.time.scale()
+        //    var bars = d3.time.scale()
 	    // .domain([new Date(2013, 2, 1), new Date(2013, 2, 15) - 1])
 	    // .range([0, width]);
 
@@ -32,12 +27,24 @@ angular.module('partition').directive('partitionDirective', function () {
 	        			.orient("right")
                         .tickSize(containerWith)
         			);
-
         	staff.selectAll("path")
         		.attr("display", "none");
         	staff.selectAll("line")
         		.attr("stroke", "black");
 
+            var bars = svg.append("g")
+                .call(d3.svg.axis()
+                    .scale(d3.scale.linear().domain([0,scope.partition.bars.length]).range([containerWith - margin, margin]))
+	        			.ticks(scope.partition.bars.length)
+	        			.tickFormat(function(d){return;})
+                        .tickSize(containerWith)
+                    );
+            bars.selectAll("path")
+        		.attr("display", "none");
+        	bars.selectAll("line")
+        		.attr("stroke", "black");
+            
+            
     	}
 
     	update();
