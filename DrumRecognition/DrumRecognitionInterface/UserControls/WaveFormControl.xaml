@@ -1,7 +1,0 @@
-﻿<UserControl x:Class="DrumRecognitionInterface.UserControls.WaveFormControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-             MouseWheel="UserControl_MouseWheel_1" MouseMove="UserControl_MouseMove_1" MouseDown="UserControl_MouseDown_1" 
-            >
-    
-</UserControl>
