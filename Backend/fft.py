@@ -1,6 +1,7 @@
 from pylab import*
 from scipy.io import wavfile
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -17,6 +18,15 @@ def getFrequencies(duration, samplingRate):
     
     return np.linspace(0.0, (samplingRate / 2), sampleNumber / 2 + 1) #todo: why is it +1 ?
 
+def visualizeArray(arrays):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(arrays, interpolation='nearest')
+    fig.colorbar(cax)
+    
+    plt.show()
+
+    
 #frame duration shouldn't be below 0.05s, as the lowest frequency heard is 20Hz. 20Hz is one oscillation each 0.05s. If the frame is shorter, we can't find those frequencies which may help (as we hear them).
 def performFFTs(sound, frameDuration=0.1):
     samplingRate = sound[0]
@@ -58,7 +68,8 @@ def performFFTs(sound, frameDuration=0.1):
 #         print frequencies
 #         print fftFreq
 #         print amplitude
-        result.append(np.array(10*log10(amplitude)))
+        #result.append(np.array(10*log10(amplitude))) todo: is it ok to do not use a logarithmic scale ?
+        result.append(np.array(amplitude))
 #         result.append({'frequencies': frequencies, 'power' : np.array(10*log10(amplitude))})
         
     return np.array(result)

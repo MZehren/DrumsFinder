@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.preprocessing import normalize
+
 import theano
 import theano.tensor as T
 import lasagne
@@ -58,26 +60,28 @@ def load_dataset():
     # (It doesn't matter how we do this as long as we can read them again.)
     return X_train, y_train, X_val, y_val, X_test, y_test
 
-def loadDataset(trainingFraction=0.5, evalFraction=0.4, testFraction=0.1):
+def loadDataset(trainingFraction=0.7, evalFraction=0.2, testFraction=0.1):
     X = [] #TODO : is it faster to use a npArray here ?
     y = []
-    for label, foldername in enumerate(['samples/Kicks', 'samples/Snares', 'samples/HiHats']):
+    for label, foldername in enumerate(['samples/Kicks', 'samples/HiHats', 'samples/Snares']):
         for filename in os.listdir(foldername):
             path = foldername + '/' + filename
             try: #TODO: why doens't all of them work ?
-                results = fft.performFFTs(fft.load(path), frameDuration=0.5) #shape is (number of frames, number of frequencies)
+                results = fft.performFFTs(fft.load(path), frameDuration=0.3) #shape is (number of frames, number of frequencies)
                 
                 if(len(results) > 0):
-                    X.append(results[0:1]) #TODO, make it dynamic 
+                    X.append(results[0]) #TODO, make it dynamic 
                     y.append(label)
             except ValueError:
                 warnings.warn("can't open : " + path + "\n" + str(ValueError))
 
-    X = np.array(X) # (number of samples, number of frames, number of frequencies)
+    X = normalize(np.array(X)) # (number of samples, 'number of frames', number of frequencies)
     y = np.array(y) # (number of samples)
     y = y.astype(np.uint8) # The targets are int64, we cast them to int8 for GPU compatibility.
     
     print(X.shape)
+    fft.visualizeArray(X)
+    
     print(y.shape)
     #We divide the set in 3 different set, shuffled 
     N = len(y)
@@ -107,23 +111,23 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 def buildMLP(input_var = None):
     #batch size = None, number of frames = None, number of frequencies = 2206
     #input_var it's Theano variable created linked to the input layer
-    l_in = lasagne.layers.InputLayer(shape=(None, 1, len(fft.getFrequencies(0.5, 44100))), 
+    l_in = lasagne.layers.InputLayer(shape=(None, len(fft.getFrequencies(0.3, 44100))), 
                                      input_var = input_var)
     l_in_drop = lasagne.layers.DropoutLayer(l_in, p=0.2)
     
     l_hid1 = lasagne.layers.DenseLayer(
-        l_in_drop, num_units=2500, #TODO: which number should we use ?
+        l_in_drop, num_units=500, #TODO: which number should we use ?
         nonlinearity=lasagne.nonlinearities.rectify,
         W=lasagne.init.GlorotUniform())
     l_hid1_drop = lasagne.layers.DropoutLayer(l_hid1, p=0.5)
 
     l_hid2 = lasagne.layers.DenseLayer(
-            l_hid1_drop, num_units=2500,
+            l_hid1_drop, num_units=500,
             nonlinearity=lasagne.nonlinearities.rectify)
     l_hid2_drop = lasagne.layers.DropoutLayer(l_hid2, p=0.5)
     
     l_out = lasagne.layers.DenseLayer(
-        l_hid2_drop, num_units=10,
+        l_hid2_drop, num_units=3,
         nonlinearity=lasagne.nonlinearities.softmax)
     
     return l_out
@@ -133,12 +137,13 @@ def buildLSTM():
     return "TODO"
 
 
+
 print("Loading Data ...")
 X_train, y_train, X_val, y_val, X_test, y_test = loadDataset()
 
 print("Building model and compiling functions...")
 # Prepare Theano variables for inputs and targets
-input_var = T.tensor3('inputs')
+input_var = T.matrix('inputs')
 target_var = T.ivector('targets')
 # Create neural network model
 network = buildMLP(input_var)
@@ -174,12 +179,13 @@ val_fn = theano.function([input_var, target_var], [test_loss, test_acc])
 
 print("Starting training...")
 num_epochs = 500
+miniBacthSize = 10
 for epoch in range(num_epochs):
     # In each epoch, we do a full pass over the training data:
     train_err = 0
     train_batches = 0
     start_time = time.time()
-    for batch in iterate_minibatches(X_train, y_train, 50, shuffle=True):
+    for batch in iterate_minibatches(X_train, y_train, miniBacthSize, shuffle=True):
         inputs, targets = batch
         train_err += train_fn(inputs, targets)
         train_batches += 1
@@ -188,7 +194,7 @@ for epoch in range(num_epochs):
     val_err = 0
     val_acc = 0
     val_batches = 0
-    for batch in iterate_minibatches(X_val, y_val, 50, shuffle=False):
+    for batch in iterate_minibatches(X_val, y_val, miniBacthSize, shuffle=False):
         inputs, targets = batch
         err, acc = val_fn(inputs, targets)
         val_err += err
