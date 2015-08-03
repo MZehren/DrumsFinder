@@ -8,6 +8,8 @@ import numpy as np
 def load(path):    
     return wavfile.read(path)
 
+def filterRange(matrix, upperLimit = -20, lowerLimit = -120):
+    return matrix[matrix < upperLimit and matrix > upperLimit]
 #duration is in seconds
 #sampling is in Hz
 #thus the highest calculable frequency is samplingRate / 2
@@ -18,12 +20,17 @@ def getFrequencies(duration, samplingRate):
     
     return np.linspace(0.0, (samplingRate / 2), sampleNumber / 2 + 1) #todo: why is it +1 ?
 
-def visualizeArray(arrays):
+def visualizeArray(arrays, samplingRate = 44100, frameDuration=0.1):
+    
+    extent = [0, (frameDuration / 2) * len(arrays[0]),float(samplingRate) / float(2000), 0] # [xmin, xmax, ymin, ymax]
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    cax = ax.matshow(arrays, interpolation='nearest')
+    cax = ax.imshow(arrays, cmap="nipy_spectral", extent=extent, aspect="auto")
     fig.colorbar(cax)
     
+   
+    plt.ylabel("frequencies (kHz)")
+    plt.xlabel("time (s)")
     plt.show()
 
     
@@ -68,8 +75,8 @@ def performFFTs(sound, frameDuration=0.1):
 #         print frequencies
 #         print fftFreq
 #         print amplitude
-        #result.append(np.array(10*log10(amplitude))) todo: is it ok to do not use a logarithmic scale ?
-        result.append(np.array(amplitude))
+        result.append(np.array(10*log10(amplitude))) #todo: is it ok to do not use a logarithmic scale ?
+        #result.append(np.array(amplitude))
 #         result.append({'frequencies': frequencies, 'power' : np.array(10*log10(amplitude))})
         
     return np.array(result)

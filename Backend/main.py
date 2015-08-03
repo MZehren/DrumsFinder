@@ -136,6 +136,9 @@ def buildMLP(input_var = None):
 def buildLSTM():
     return "TODO"
 
+test = fft.performFFTs(fft.load("440_sine.wav"), frameDuration=0.02)
+fft.visualizeArray(np.transpose(test), frameDuration =0.02)
+
 
 
 print("Loading Data ...")
