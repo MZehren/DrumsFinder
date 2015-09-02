@@ -11,7 +11,7 @@ import warnings
 import time
 
 import fft
-from sympy.core.numbers import RealNumber
+from lasagne.layers.shape import ReshapeLayer
 
 def load_dataset():
     # We first define some helper functions for supporting both Python 2 and 3.
@@ -93,7 +93,7 @@ def loadDataset(trainingFraction=0.7, evalFraction=0.2, testFraction=0.1):
     
     return X[trainIndices], y[trainIndices], X[evalIndices], y[evalIndices], X[testIndices], y[testIndices]
 
-#iterating in numpy arrays in minibatchs
+#  iterating in numpy arrays in minibatchs
 def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
     assert len(inputs) == len(targets)
     if shuffle:
@@ -132,14 +132,23 @@ def buildMLP(input_var = None):
     
     return l_out
 
-
-def buildLSTM():
-    return "TODO"
-
-test = fft.performFFTs(fft.load("440_sine.wav"), frameDuration=0.1, windowStep = 0.002)
-fft.visualizeArray(np.transpose(test), frameDuration = 0.1)
-
-
+#from the tuto : http://lasagne.readthedocs.org/en/latest/modules/layers/recurrent.html
+def buildLSTM(input_var = None):
+    num_inputs = len(fft.getFrequencies(0.3, 44100))
+    num_units = 12
+    num_classes = 3
+    
+    l_inp = lasagne.layers.InputLayer((None, None, num_inputs)) #batch_size, sequence_length, num_inputs
+    batch_size, sequence_length, _ = l_inp.input_var.shape #retreive a link to the input variable's shape
+    
+    l_lstm = lasagne.layers.LSTMLayer(l_inp, num_units=num_units)
+    
+    l_shp = lasagne.layers.ReshapeLayer(l_lstm, (-1, num_units)) #to connect the recurrent layer to the dense layer, we have to flatten the first two dimension (batch and sequence).  
+    l_dense = lasagne.layers.DenseLayer(l_shp, num_units = num_classes)
+    
+    l_out = lasagne.layers.ReshapeLayer(l_dense, (batch_size, sequence_length, num_classes)) #we reshape back to the original shape
+    
+    return l_out
 
 print("Loading Data ...")
 X_train, y_train, X_val, y_val, X_test, y_test = loadDataset()

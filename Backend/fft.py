@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+
+
 def load(path):    
     return wavfile.read(path)
 
@@ -93,3 +95,7 @@ def performFFTs(sound, frameDuration=0.1, windowStep=0.05):
 #         result.append({'frequencies': frequencies, 'power' : np.array(10*log10(amplitude))})
         
     return np.array(result)
+
+
+test = performFFTs(load("440_sine.wav"), frameDuration=0.1, windowStep = 0.002)
+visualizeArray(np.transpose(test), frameDuration = 0.1)
