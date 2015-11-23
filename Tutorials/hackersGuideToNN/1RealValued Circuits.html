@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+<body>
+	<script>
+		var app = angular.module('myApp', []);
+		app.controller('myCtrl', function($scope) {
+
+			//input values
+			$scope.x = -2;
+			$scope.y = 3;
+	
+			//circuite computation
+			$scope.forwardMultiplyGate = function(x, y){
+				return x * y;
+			}
+
+			//artificial intelligence : we want to tweak the input which really is the weight of the neurone to increase the output
+			//strategy #1: Random Local Search
+			$scope.randomLocalSearch = function(){
+				var learningRate = 0.1;
+
+				var x = $scope.x;
+				var y = $scope.y;
+				var result =  $scope.forwardMultiplyGate(x, y);
+				
+				var xOffset = (Math.random() * 2 - 1) * learningRate;
+				var yOffset = (Math.random() * 2 - 1) * learningRate;
+				
+				if(result <  $scope.forwardMultiplyGate(x+xOffset, y))
+					$scope.x += xOffset;
+
+				if(result <  $scope.forwardMultiplyGate(x, y + yOffset))
+					$scope.y += yOffset;
+			}
+			
+
+			//strategy #2: Numerical Gradient
+			$scope.numericalGradient = function(){
+				var learningRate = 0.1;
+
+				var x = $scope.x;
+				var y = $scope.y;
+				var result = $scope.forwardMultiplyGate(x, y);
+				
+				var h = 0.0001
+				//the derivative of f with respect to x, when h goes to 0
+				//the gradient is the derivative with respect to all the inputs
+				var xDerivative = ($scope.forwardMultiplyGate(x+h, y) - $scope.forwardMultiplyGate(x, y)) / h;
+				$scope.x += learningRate * xDerivative;
+
+				var yDerivative = ($scope.forwardMultiplyGate(x, y+h) - $scope.forwardMultiplyGate(x, y)) / h;
+				$scope.y += learningRate * yDerivative;
+			}
+
+			//strategy #3: analytic Gradient
+			$scope.analyticGradient = function(){
+				var learningRate = 0.1;
+
+				var x = $scope.x;
+				var y = $scope.y;
+							
+				var xDerivative = y;
+				var yDerivative = x;
+				
+				$scope.x += learningRate * xDerivative;
+				$scope.y += learningRate * yDerivative;
+
+			}
+		});
+	</script>
+
+	<div ng-app="myApp" ng-controller="myCtrl">
+		<input type="text" ng-model="x"/>
+		<input type="text" ng-model="y"/>
+		
+		<button ng-click="randomLocalSearch()">RandomLocalSearch</button>
+		<button ng-click="numericalGradient()">numericalGradient</button>
+		<button ng-click="analyticGradient()">analyticGradient</button>
+		<p>{{forwardMultiplyGate(x, y)}}</p>
+	</div>
+</body>
+</html>

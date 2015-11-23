@@ -54,7 +54,7 @@ class Chunk:
     
     def getDataAsTrackEvents(self):
         for n in range(0, len(self.data), 4):
-            delta_time = 
+            delta_time = n
         
         return [(int(self.data[n:n+2].encode('hex'),16), int(self.data[n+2:n+4].encode('hex'),16)) for n in range(0, len(self.data), 4)]
     

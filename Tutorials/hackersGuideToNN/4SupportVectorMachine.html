@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+<body>
+	<script>
+		var app = angular.module('myApp', []);
+		app.controller('myCtrl', function($scope) {
+			
+			$scope.getLabel = function(x, y){
+				var functionToLearn = function(x){
+					return 0.5*x;
+				}
+
+				if(y > functionToLearn(x))
+					return 1;
+				else
+					return -1;
+			}
+
+			//let use a nn of the form f(x,y) = ax + by + c
+			//x and y are the input
+			//a, b, c are the parameters to learn
+			$scope.a = Math.random()*2 - 1;
+			$scope.b = Math.random()*2 - 1;
+			$scope.c = Math.random()*2 - 1;
+	
+			//stochastic gradient descent
+			$scope.learn = function(){
+				var score = 0;
+				for(var i = 0; i < 100 ; i++){
+					var x = Math.random() * 100 - 50;
+					var y = Math.random() * 100 - 50;
+					var ax = $scope.a * x;
+					var by = $scope.b * y;
+					var c = $scope.c;
+					var forward = ax + by + c;
+
+					var label = $scope.getLabel(x, y);
+					
+					if(forward * label > 0)
+						score ++;
+					
+					var loss = label - forward;
+					//back Propagation
+					var learningRate = 0.001;
+					var cD = 1;
+					var axD = 1;
+					var byD = 1;
+					var aD = x;
+					var bD = y;
+					
+					//todo: let a pull of 0 if the result is good
+
+					//vanilla
+					//$scope.a += learningRate * aD * axD * label;
+					//$scope.b += learningRate * bD * byD * label;
+					//$scope.c += learningRate * cD * label;
+
+					//why it doesn't work ? 
+					// -> because the cost should be zero is the nn predicted correctly. The nn shouldn't predict a score of 1 and -1, but a very larger number either positive of negative.
+					//$scope.a += learningRate * aD * axD * loss;
+					//$scope.b += learningRate * bD * byD * loss;
+					//$scope.c += learningRate * cD * loss;
+
+					//with a pull toward 0 for each paramters
+					$scope.a += learningRate * (aD * axD * label - $scope.a);
+					$scope.b += learningRate * (bD * byD * label - $scope.b);
+					$scope.c += learningRate * (cD * label - $scope.c);
+
+
+					
+				}
+
+				$scope.score = score / 100;
+			}
+
+		});
+	</script>
+
+	<div ng-app="myApp" ng-controller="myCtrl">
+		a : <input type="number" ng-model="a"></input>
+		b : <input type="number" ng-model="b"></input>
+		c : <input type="number" ng-model="c"></input>
+	
+
+		<button ng-click="learn()">learn</button>
+		{{score}}
+	</div>
+</body>
+</html>

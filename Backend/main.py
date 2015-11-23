@@ -10,7 +10,7 @@ import os
 import warnings
 import time
 
-import fft
+from shared import fft
 from lasagne.layers.shape import ReshapeLayer
 
 def load_dataset():
