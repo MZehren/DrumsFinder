@@ -1,0 +1,38 @@
+﻿dendrogram-directive .node {
+    cursor: pointer;
+  }
+
+/*  dendrogram-directive .overlay{
+      background-color:#EEE;
+  }*/
+   
+  dendrogram-directive .node circle {
+    fill: #fff;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+  }
+   
+  dendrogram-directive .node text {
+    font-size:10px; 
+    font-family:sans-serif;
+  }
+   
+  dendrogram-directive .link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: .5px;
+  }
+
+  dendrogram-directive .templink {
+    fill: none;
+    stroke: red;
+    stroke-width: 3px;
+  }
+
+  dendrogram-directive .ghostCircle.show{
+      display:block;
+  }
+
+  dendrogram-directive .ghostCircle, dendrogram-directive .activeDrag dendrogram-directive .ghostCircle{
+       display: none;
+  }

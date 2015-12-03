@@ -1,0 +1,23 @@
+bar-chart-directive .axis path,
+bar-chart-directive .axis line {
+  fill: none;
+  stroke: #747474;
+  shape-rendering: crispEdges;
+}
+
+tooltip-directive bar-chart-directive text{
+	fill: none;
+	color: #fff;
+	stroke: #fff;	
+	shape-rendering: crispEdges;
+}
+bar-chart-directive tooltip-directive{
+	color: #fff;
+	stroke: #fff;
+}
+bar-chart-directive .x.axis path {
+  display: none;
+}
+.bar:hover{
+    cursor: pointer;
+}
