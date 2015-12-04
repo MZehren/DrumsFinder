@@ -23,7 +23,7 @@ with open("nietzsche.txt", "r") as dataFile:
 charSet = {key: pos for pos, key in enumerate(set(data))}
 reverseLookup = {pos: key for pos, key in enumerate(charSet)}
 
-sequenceLength = 10
+sequenceLength = 1
 numberOfFeature = 3
 def gen(offset, size):
     x = [[charToVect(data[offset + i], charSet) for i in range(size)]] #batch of sequence of vector for the input
