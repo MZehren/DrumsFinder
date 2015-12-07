@@ -10,6 +10,9 @@ import numpy as np
 def load(path):    
     return wavfile.read(path)
 
+def write(path, rate, data):
+    wavfile.write(path, rate, data)
+    
 def filterRange(matrix, upperLimit = -20, lowerLimit = -120):
     upperMask = matrix[:,:] > upperLimit
     matrix[upperMask] = lowerLimit
@@ -97,5 +100,5 @@ def performFFTs(sound, frameDuration=0.1, windowStep=0.05):
     return np.array(result)
 
 
-test = performFFTs(load("440_sine.wav"), frameDuration=0.1, windowStep = 0.002)
-visualizeArray(np.transpose(test), frameDuration = 0.1)
+# test = performFFTs(load("440_sine.wav"), frameDuration=0.1, windowStep = 0.002)
+# visualizeArray(np.transpose(test), frameDuration = 0.1)

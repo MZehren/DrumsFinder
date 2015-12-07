@@ -150,6 +150,7 @@ class MidiEvent:
     def __init__(self, track):
         self.track = track
         self.time = None
+        self.deltaTime = None
         self.channel = self.pitch = self.velocity = self.data = None
 
     def __cmp__(self, other):
@@ -157,9 +158,10 @@ class MidiEvent:
         return cmp(self.time, other.time)
 
     def __repr__(self):
-        r = ("<MidiEvent %s, t=%s, track=%s, channel=%s" %
+        r = ("<MidiEvent: type=%s, time=%s, deltaTime=%s track=%s, channel=%s" %
              (self.type,
               repr(self.time),
+              repr(self.deltaTime),
               self.track.index,
               repr(self.channel)))
         for attrib in ["pitch", "data", "velocity"]:
@@ -168,9 +170,10 @@ class MidiEvent:
 attrib))
         return r + ">"
 
-    def read(self, time, str):
+    def read(self, time, deltaTime, str):
         global runningStatus
         self.time = time
+        self.deltaTime = deltaTime
         # do we need to use running status?
         if not (ord(str[0]) & 0x80):
             str = runningStatus + str
@@ -258,6 +261,14 @@ attrib))
         else:
             raise "unknown midi event type: " + self.type
 
+
+    def getData(self):
+        if self.type == 'SET_TEMPO':
+            microsecondPerBeat, i = getNumber(self.data,3)
+            secondPerBeat = microsecondPerBeat / 1000000.
+            bpm = 60/secondPerBeat
+            return bpm, secondPerBeat
+
 """
 register_note() is a hook that can be overloaded from a script that
 imports this module. Here is how you might do that, if you wanted to
@@ -327,7 +338,7 @@ class MidiTrack:
         for i in range(16):
             self.channels.append(MidiChannel(self, i+1))
 
-    def read(self, str):
+    def read(self, str): #read events of the track
         time = 0
         assert str[:4] == "MTrk"
         length, str = getNumber(str[4:], 4)
@@ -335,12 +346,12 @@ class MidiTrack:
         mystr = str[:length]
         remainder = str[length:]
         while mystr:
-            delta_t = DeltaTime(self)
+            delta_t = DeltaTime(self) #delta_t in tick (NOT MS) since the last event OF THIS track
             dt, mystr = delta_t.read(mystr)
-            time = time + dt
+            time = dt + time
             self.events.append(delta_t)
             e = MidiEvent(self)
-            mystr = e.read(time, mystr)
+            mystr = e.read(time, dt, mystr)
             self.events.append(e)
         return remainder
 
@@ -390,6 +401,7 @@ class MidiFile:
     def read(self):
         self.readstr(self.file.read())
 
+#see http://www.somascape.org/midi/tech/mfile.html#mthd
     def readstr(self, str):
         assert str[:4] == "MThd"
         length, str = getNumber(str[4:], 4)
@@ -399,15 +411,15 @@ class MidiFile:
         assert format == 0 or format == 1   # dunno how to handle 2
         numTracks, str = getNumber(str, 2)
         division, str = getNumber(str, 2)
-        if division & 0x8000:
+        if division & 0x8000: #timecode encoding: tickDiv is in Hrs.Mins.Secs.Frames
             framesPerSecond = -((division >> 8) | -128)
             ticksPerFrame = division & 0xFF
             assert ticksPerFrame == 24 or ticksPerFrame == 25 or \
                    ticksPerFrame == 29 or ticksPerFrame == 30
             if ticksPerFrame == 29: ticksPerFrame = 30  # drop frame
             self.ticksPerSecond = ticksPerFrame * framesPerSecond
-        else:
-            self.ticksPerQuarterNote = division & 0x7FFF
+        else: #metrical timing: tickdiv is in bar.beats
+            self.ticksPerQuarterNote = division & 0x7FFF #number of subdivision of a quarter note / pulse per quandter note : ppqn
         for i in range(numTracks):
             trk = MidiTrack(i)
             str = trk.read(str)
@@ -427,6 +439,23 @@ class MidiFile:
             str = str + trk.write()
         return str
 
+  
+    def getEvents(self):
+        assert self.format == 1
+        incrementDict = IncrementDict()
+        secondPerBeat = 60/120
+        for tempEvent in self.tracks[0].events:
+            if tempEvent.type == 'SET_TEMPO':
+                assert secondPerBeat == 60/120
+                bpm, secondPerBeat = tempEvent.getData()
+                
+        for noteEvent in self.tracks[1].events:
+            if noteEvent.type == "NOTE_ON" and noteEvent.velocity:
+                ticks = float(noteEvent.time)
+                beats = ticks/self.ticksPerQuarterNote
+                seconds = beats * secondPerBeat
+                incrementDict.add(seconds, noteEvent)
+        return incrementDict.dict
 
 def main(argv):
     global debugflag
@@ -457,15 +486,15 @@ def main(argv):
         m.write()
         m.close()
 
-class TimeLine:
+class IncrementDict:
     def __init__(self):
         self.dict = {}
 
-    def add(self, time, pitch, velocity):
-        if time in self.dict:
-            self.dict[time].append((pitch, velocity))
+    def add(self, key, value):
+        if key in self.dict:
+            self.dict[key].append(value)
         else:
-            self.dict[time] = [(pitch, velocity)]
+            self.dict[key] = [value]
         
 
 if __name__ == "__main__":
@@ -474,9 +503,4 @@ if __name__ == "__main__":
     midiFile.read()
     midiFile.close()
     
-    timeLine = TimeLine()
-    for track in midiFile.tracks:
-        for event in track.events:
-            if event.type == "NOTE_ON":
-                timeLine.add(event.time, event.pitch, event.velocity)
-    print timeLine.dict
+   
