@@ -441,20 +441,27 @@ class MidiFile:
 
   
     def getEvents(self):
-        assert self.format == 1
+        assert self.format == 1 #guitarpro format for now 
         incrementDict = IncrementDict()
-        secondPerBeat = 60/120
+        secondPerBeats = []
         for tempEvent in self.tracks[0].events:
             if tempEvent.type == 'SET_TEMPO':
-                assert secondPerBeat == 60/120
                 bpm, secondPerBeat = tempEvent.getData()
-                
+                secondPerBeats.append((tempEvent.time, secondPerBeat))
+        
+        cursor = 0
         for noteEvent in self.tracks[1].events:
-            if noteEvent.type == "NOTE_ON" and noteEvent.velocity:
-                ticks = float(noteEvent.time)
+            secondPerBeat = 0.508333333 #bpm 120
+            for tempo in secondPerBeats:
+                if tempo[0] < noteEvent.time:
+                    secondPerBeat = tempo[1]
+            if noteEvent.deltaTime != None:
+                ticks = float(noteEvent.deltaTime)
                 beats = ticks/self.ticksPerQuarterNote
                 seconds = beats * secondPerBeat
-                incrementDict.add(seconds, noteEvent)
+                cursor += seconds
+                if noteEvent.type == "NOTE_ON" and noteEvent.velocity:
+                    incrementDict.add(cursor, noteEvent)
         return incrementDict.dict
 
 def main(argv):
@@ -486,6 +493,7 @@ def main(argv):
         m.write()
         m.close()
 
+#unique dict where values with same key are stored in an array 
 class IncrementDict:
     def __init__(self):
         self.dict = {}
