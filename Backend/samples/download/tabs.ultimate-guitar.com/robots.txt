@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /guitar/
+Disallow: /forum/
+Disallow: /print/
+Disallow: /tab_print.php

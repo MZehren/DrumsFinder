@@ -1,0 +1,16 @@
+{
+  "name": "Frontend",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.html",
+  "dependencies": {
+    "midifile": "~1.0.4",
+    "midiplayer": "~1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mickael Zehren",
+  "license": "BSD-2-Clause"
+}

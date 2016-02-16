@@ -1,8 +1,8 @@
-﻿﻿angular.module('nnApp', ['ngRoute', 'home', 'partition' ]) 
+﻿﻿angular.module('nnApp', ['ngRoute', 'midi', 'ui.bootstrap']) 
 .config(['$routeProvider', function ($routeProvider) {
     $routeProvider
         .when('/', {
-            templateUrl: 'app/components/home/homeTemplate.html'
+            templateUrl: 'shared/midi/testTemplate.html'
         })
         .otherwise({
             redirectTo: '/'

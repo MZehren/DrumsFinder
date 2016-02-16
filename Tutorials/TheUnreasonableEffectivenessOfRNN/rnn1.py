@@ -1,3 +1,4 @@
+# on the example of https://github.com/Lasagne/Recipes/blob/master/examples/lstm_text_generation.py
 import operator
 
 import numpy as np
