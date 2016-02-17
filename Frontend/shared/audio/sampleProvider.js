@@ -1,5 +1,5 @@
-angular.module('partition')
-    .factory('audio', [function featuresFactory() {
+angular.module('audio')
+    .factory('sampleProvider', [function featuresFactory() {
 
   //   	var channel_max = 1;										// number of channels
 		// audiochannels = new Array();
