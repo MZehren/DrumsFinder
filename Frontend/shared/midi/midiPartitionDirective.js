@@ -11,8 +11,16 @@ angular.module('midi').directive('midiPartitionDirective', function () {
     	function update(value, oldValue){
             if(value == oldValue) return;
 
-            var events = scope.midiFile.getMidiEvents().slice(0,100);
-            console.log(events);
+            // https://github.com/nfroidure/MIDIFile
+            var eventsChunk = scope.midiFile.getMidiEvents().slice(0,100);
+            var midiEvents = MIDIEvents.createParser(eventsChunk);
+            var events = []
+            
+            var event;
+            while(event=midiEvents.next()) {
+                // Printing meta events containing text only
+                events.push(event);
+            }
 
             var width = element.parent().width();
             var height = width/2;//element.parent().height() || element.parent().width();;

@@ -22,7 +22,7 @@ angular.module('midi')
 		oReq.send(null);
    	}
 
-    downloadFile('assets/Partitions/LegionsOfTheSerpant.mid', function(buffer){
+    downloadFile('assets/Partitions/test.mid', function(buffer){
     	var midiFile = new MIDIFile(buffer);
     	$scope.$apply(function(){
     		$scope.midiFile = midiFile;

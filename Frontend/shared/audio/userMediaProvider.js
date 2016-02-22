@@ -1,6 +1,8 @@
 angular.module('audio')
-    .factory('userMediaProvider', [function featuresFactory() {
-
+    .factory('userMediaProvider', ['$interval', function userMediaFactory($interval) {
+    
+    var myThis = this;
+    
     this.toggleLiveInput = function() {
     getUserMedia(
     	{
@@ -28,33 +30,55 @@ angular.module('audio')
                 navigator.getUserMedia ||
                 navigator.webkitGetUserMedia ||
                 navigator.mozGetUserMedia;
-            navigator.getUserMedia(dictionary, callback, function(){alert('Stream generation failed.');});
+            navigator.getUserMedia(dictionary, callback, function(e){alert(e.name);});
         } catch (e) {
             alert('getUserMedia threw exception :' + e);
         }
     }
     
 
-    var audioContext = new AudioContext();
+    this.audioContext = new AudioContext();
     var fftSize = 2048;
     function gotStream(stream) {
         // Create an AudioNode from the stream.
-        mediaStreamSource = audioContext.createMediaStreamSource(stream);
+        mediaStreamSource =  myThis.audioContext.createMediaStreamSource(stream);
         
         // Connect it to the destination.
-        analyser = audioContext.createAnalyser();
+        analyser =  myThis.audioContext.createAnalyser();
         analyser.fftSize = fftSize;
         mediaStreamSource.connect( analyser );
         
         performFft();
     }
     
-    var buf = new Float32Array( fftSize );
+    //todo: use broadcast instead of the watch ?
+    this.fftBuffer = new Float32Array( fftSize );
+    var intervalPromise = null;
+    
     function performFft(){
-        analyser.getFloatTimeDomainData( buf );
-        console.log(buf);
+        var step = (fftSize /  myThis.audioContext.sampleRate) * 1000;
+        intervalPromise = $interval(
+            function(){
+                analyser.getFloatTimeDomainData( myThis.fftBuffer );
+                // console.log(buf);
+            }, step);
     }
+    
+    // this.on('$destroy', function() {
+    //     $interval.cancel(intervalPromise);
+    // });
 
+//     Spectrogram.prototype.getFrequencyValue = function(freq) {
+//     var nyquist = this.context.sampleRate/2;
+//     var index = Math.round(freq/nyquist * this.freqs.length);
+//     return this.freqs[index];
+//     }
+// 
+//     Spectrogram.prototype.getBinFrequency = function(index) {
+//     var nyquist = this.context.sampleRate/2;
+//     var freq = index / this.freqs.length * nyquist;
+//     return freq;
+//     }
 
 
 		return this;
