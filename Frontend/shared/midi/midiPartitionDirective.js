@@ -11,16 +11,11 @@ angular.module('midi').directive('midiPartitionDirective', function () {
     	function update(value, oldValue){
             if(value == oldValue) return;
 
-            // https://github.com/nfroidure/MIDIFile
-            var eventsChunk = scope.midiFile.getMidiEvents().slice(0,100);
-            var midiEvents = MIDIEvents.createParser(eventsChunk);
-            var events = []
-            
-            var event;
-            while(event=midiEvents.next()) {
-                // Printing meta events containing text only
-                events.push(event);
-            }
+
+
+            //creating starting and ending time for each events.
+            var events = scope.getMidiNotes(scope.midiFile).slice(0,100);
+
 
             var width = element.parent().width();
             var height = width/2;//element.parent().height() || element.parent().width();;
@@ -47,7 +42,9 @@ angular.module('midi').directive('midiPartitionDirective', function () {
                     })
                     .on("click", function(d){ console.log(d)})
                 .append("rect")
-                    .attr("width", function(d){ return 10 })
+                    .attr("width", function(d){ 
+                        return  d.stopTime - d.playTime - 10;
+                    })
                     .attr("height", function(d){ return 10});
 
 
@@ -59,9 +56,9 @@ angular.module('midi').directive('midiPartitionDirective', function () {
     }
     return {
         restrict: 'E',
-        scope : {
-        	midiFile : '='
-        },
+        // scope : {
+        // 	midiFile : '='
+        // },
         link: link
     };
 });
