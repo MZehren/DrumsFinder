@@ -50,13 +50,48 @@ angular.module('midi')
         });
 
         return events;
-
    	}
 
-    downloadFile('assets/Partitions/LegionsOfTheSerpant.mid', function(buffer){
+    var midiPlayer;
+    navigator.requestMIDIAccess().then(function(midiAccess) {
+
+        var outputs = [];
+        var iter =  midiAccess.outputs.values();
+        var output;
+        while(output = iter.next()) {
+            if(output.done) {
+                break;
+            }
+            var opt = document.createElement('option');
+            opt.value = output.value.id;
+            opt.text = output.value.name;
+            outputs.push(opt);
+        }
+
+        // Creating player
+        midiPlayer = new MIDIPlayer({
+          'output': midiAccess.outputs.get(outputs[0].value)
+        });
+
+    }, function() {
+        console.log('No midi output');
+    });
+    
+    //todo: put this in a module ?
+    $scope.playMidi = function(midi){
+        // Loading the midiFile instance in the player
+        midiPlayer.load(midi);
+        midiPlayer.play(function() {
+            console.log('Play ended');
+        });
+    }
+
+    //LegionsOfTheSerpant
+    downloadFile('assets/Partitions/test.mid', function(buffer){
     	var midiFile = new MIDIFile(buffer);
     	$scope.$apply(function(){
     		$scope.midiFile = midiFile;
+            $scope.playMidi(midiFile)
     	})
     	
     })

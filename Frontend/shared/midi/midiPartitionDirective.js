@@ -43,7 +43,7 @@ angular.module('midi').directive('midiPartitionDirective', function () {
                     .on("click", function(d){ console.log(d)})
                 .append("rect")
                     .attr("width", function(d){ 
-                        return  d.stopTime - d.playTime - 10;
+                        return   x(d.stopTime - d.playTime);
                     })
                     .attr("height", function(d){ return 10});
 
