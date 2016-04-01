@@ -52,6 +52,7 @@ angular.module('audio')
     }
     
     //todo: use broadcast instead of the watch ?
+    //todo: when hitting a breakpoint after the first analyser make the recording to stop..
     this.fftBuffer = new Float32Array( fftSize );
     var intervalPromise = null;
     

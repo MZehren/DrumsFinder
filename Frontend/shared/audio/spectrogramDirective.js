@@ -19,84 +19,87 @@ angular.module('audio').directive('spectrogramDirective', function () {
             .attr("class", "y axis")
             .style("fill", "none");
 
-        function reduceDimensions(array, dimensions){
-            if(array.length <= dimensions) return array;
+        // function reduceDimensions(array, dimensions){
+        //     if(array.length <= dimensions) return array;
             
-            var step =  parseInt(array.length/dimensions);
+        //     var step =  parseInt(array.length/dimensions);
             
-            var result = []
-            for(var i = 0; i < dimensions; i ++)
-                result.push(array[i*step]);
+        //     var result = []
+        //     for(var i = 0; i < dimensions; i ++)
+        //         result.push(array[i*step]);
             
             
-            return result;
-        }
+        //     return result;
+        // }
 
   
 
     	function update(data){
-            var width = 960,
-                height = 500;
+            var canvasWidth = 960,
+                canvasHeight = 200;
 
-            var dx = depth,
-                dy = data[0].length;
+            var imageWidth = depth,
+                imageHeight = 100;
            
            // Fix the aspect ratio.
             // var ka = dy / dx, kb = height / width;
             // if (ka < kb) height = width * ka;
             // else width = height / ka;
 
-            var x = d3.scale.linear()
-                .domain([0, dx])
-                .range([0, width]);
+            var scaleImageToCanvasWidth = d3.scale.linear() //from image width domain to canvas width
+                .domain([0, imageWidth])
+                .range([0, canvasWidth]);
 
-            var y = d3.scale.linear()
-                .domain([0, dy])
-                .range([height, 0]);
+            var scaleImageToCanvasHeight = d3.scale.linear()
+                .domain([0, imageHeight])
+                .range([canvasHeight, 0]);
 
             var color = d3.scale.linear()
-                .domain([-0.1, 0.1])
-                .range(["#0a0", "#fff"]);
+                .domain([-0.1 , -0.05 , 0 , 0.05 ,0.1])
+                .range(["#0a0", "#6c0", "#ee0", "#eb4", "#eb9", "#fff"]);
 
-            var xAxisScale = d3.svg.axis()
-                .scale(x)
+            var xAxis = d3.svg.axis()
+                .scale(scaleImageToCanvasWidth)
                 .orient("top")
                 .ticks(20);
 
-            var yAxisScale = d3.svg.axis()
-                .scale(y)
+            var yAxis = d3.svg.axis()
+                .scale(scaleImageToCanvasHeight)
                 .orient("right");
 
-            canvas.attr("width", dx)
-                .attr("height", dy)
-                .style("width", width + "px")
-                .style("height", height + "px")
-                .call(function(cavas){ drawImage(canvas, data, dx, dy, color); });
+            canvas.attr("width", imageWidth)
+                .attr("height", imageHeight)
+                .style("width", canvasWidth + "px")
+                .style("height", canvasHeight + "px")
+                .call(function(cavas){ drawImage(canvas); });
 
-            svg.attr("width", width)
-            .attr("height", height);
+            svg.attr("width", canvasWidth)
+            .attr("height", canvasHeight);
             
-            xAxis.attr("transform", "translate(0," + height + ")")
-            .call(xAxisScale);
+            // xAxis.attr("transform", "translate(0," + imageWidth + ")")
+            //     .call(xAxis);
             
-            yAxis.call(yAxisScale);
+            // yAxis.call(yAxis);
             
 
             
             // Compute the pixel colors; scaled by CSS.
             function drawImage(canvas) {
                 var context = canvas.node().getContext("2d"),
-                    image = context.createImageData(width, height);
+                    image = context.createImageData(imageWidth, imageHeight);
                 
+                //TODO: https://github.com/fullergalway/anispectrogram/blob/master/index.html create only the new pixels in the image !
+                for (var x = 0; x < imageWidth; ++x) {
+                    for (var y = 0; y < imageHeight; ++y) {
+                        var imageX = scaleImageToCanvasWidth(x);
+                        var imageY = scaleImageToCanvasHeight(y);
 
-                for (var x = 0; x < width; ++x) {
-                    if(!data[x]) break;
-                    
-                    var reducedArray = reduceDimensions(data[x], height);
-                    for (var y = 0; y < height; ++y) {
-                        var c = d3.rgb(color(reducedArray[y]));
-                        var p = (x * width + y) * 4;
-                        
+                        var intensity = -1;
+                        if(x in data && y in data[x])
+                            intensity = data[x][y];
+                        var c = d3.rgb(color(intensity));
+
+                        var p = (y * imageWidth + x) * 4;
                         image.data[p++] = c.r;
                         image.data[p++] = c.g;
                         image.data[p++] = c.b;
@@ -110,8 +113,11 @@ angular.module('audio').directive('spectrogramDirective', function () {
     	}
 
         var allData = [];
-        var depth =  scope.depth ? scope.depth : 900;
+        var depth =  96;
+
+
     	scope.$watchCollection("slice", function(value, oldValue){
+
             if(!value) return;
             
 
