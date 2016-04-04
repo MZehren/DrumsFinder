@@ -39,7 +39,7 @@ angular.module('audio').directive('spectrogramDirective', function () {
     	function update(data){
 
             var canvasWidth = 960,
-                canvasHeight = 200;
+                canvasHeight = 400;
 
             var imageWidth = depth,
                 imageHeight = 100;
@@ -58,12 +58,12 @@ angular.module('audio').directive('spectrogramDirective', function () {
                 .range([canvasHeight, 0]);
 
             //todo: takes the last column in the data, wich is not enough robust if we don't update with only the las column changing
-            maxValue = 0.1;//Math.max.apply(null, Array.prototype.slice.call(data[data.length - 1]).concat(maxValue));
-            minValue = -0.1;//Math.min.apply(null, Array.prototype.slice.call(data[data.length - 1]).concat(minValue));
+            maxValue = 0.5//Math.max.apply(null, Array.prototype.slice.call(data[data.length - 1]).concat(maxValue));
+            minValue = 0//Math.min.apply(null, Array.prototype.slice.call(data[data.length - 1]).concat(minValue));
             var rangeValue = maxValue - minValue;
             var color = d3.scale.linear()
-                .domain([minValue, minValue + 1/5 * rangeValue, minValue + 2/5 * rangeValue, minValue + 3/5 * rangeValue, minValue + 4/5 * rangeValue, maxValue])
-                .range(["#0a0", "#6c0", "#ee0", "#eb4", "#eb9", "#fff"]);
+                .domain([minValue, minValue + 0.05/5 * rangeValue, minValue + 0.25/5 * rangeValue, minValue + 1/5 * rangeValue, minValue + 3/5 * rangeValue, maxValue])
+                .range(["black", "purple", "blue", "green", "yellow", "red"]);
 
             var xAxis = d3.svg.axis()
                 .scale(scaleImageToCanvasWidth)
@@ -96,17 +96,28 @@ angular.module('audio').directive('spectrogramDirective', function () {
                     image = context.createImageData(imageWidth, imageHeight);
                 
                 //TODO: https://github.com/fullergalway/anispectrogram/blob/master/index.html create only the new pixels in the image !
-                for (var x = 0; x < imageWidth; ++x) {
-                    for (var y = 0; y < imageHeight; ++y) {
-                        var imageX = scaleImageToCanvasWidth(x);
-                        var imageY = scaleImageToCanvasHeight(y);
-
+                for (var imageX = 0; imageX < imageWidth; imageX++) {
+                    for (var imageY = 0; imageY < imageHeight; imageY++) {
+                        
                         var intensity = -1;
+                        
+                        var x = Math.floor((imageX * depth) / imageWidth);
+                        var y = Math.floor((imageY * data[0].length) / imageHeight);
                         if(x in data && y in data[x])
                             intensity = data[x][y];
+                        
+                        intensity = 0
+                        
+                        if(imageX % 6 == 0)
+                            intensity+=0.25;
+                        if(imageY % 12 == 0)
+                            intensity+= 0.25;
+                            
                         var c = d3.rgb(color(intensity));
-
-                        var p = (y * imageWidth + x) * 4;
+                        
+                    
+                            
+                        var p = (imageY * imageWidth + imageX) * 4;
                         image.data[p++] = c.r;
                         image.data[p++] = c.g;
                         image.data[p++] = c.b;
@@ -120,7 +131,7 @@ angular.module('audio').directive('spectrogramDirective', function () {
     	}
 
         var allData = [];
-        var depth =  96;
+        var depth =  50;
 
 
     	scope.$watchCollection("slice", function(value, oldValue){
@@ -128,7 +139,7 @@ angular.module('audio').directive('spectrogramDirective', function () {
             if(!value) return;
             
 
-            
+            //copy the array
             allData.push(value.slice(0));
             if(allData.length > depth)
                 allData = allData.slice(1);
