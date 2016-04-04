@@ -14,7 +14,7 @@ angular.module('midi').directive('midiPartitionDirective', function () {
 
 
             //creating starting and ending time for each events.
-            var events = scope.getMidiNotes(scope.midiFile).slice(0,100);
+            var events = value.slice(0,100);
 
 
             var width = element.parent().width();
@@ -40,7 +40,10 @@ angular.module('midi').directive('midiPartitionDirective', function () {
                     .attr("transform", function(d) { 
                         return "translate(" + x(d.playTime) + "," + y(d.param1) + ")"; 
                     })
-                    .on("click", function(d){ console.log(d)})
+                    .on("click", function(d){
+                        console.log(d);
+                        scope.playNote(d);
+                    })
                 .append("rect")
                     .attr("width", function(d){ 
                         return   x(d.stopTime - d.playTime);
@@ -51,14 +54,15 @@ angular.module('midi').directive('midiPartitionDirective', function () {
 
     	}
 
-    	scope.$watch("midiFile", update);
+    	scope.$watch("notes", update);
     	    
     }
     return {
         restrict: 'E',
-        // scope : {
-        // 	midiFile : '='
-        // },
+        scope : {
+        	notes : '=',
+            playNote : "="
+        },
         link: link
     };
 });

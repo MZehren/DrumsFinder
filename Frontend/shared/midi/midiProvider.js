@@ -1,5 +1,5 @@
 angular.module('midi')
-    .controller("MidiController", function ($scope, $http, $interval, $timeout) {
+    .factory("midiProvider", function ($http, $interval, $timeout) {
 
 	// File handlers
 	function readFile(input) {
@@ -10,20 +10,22 @@ angular.module('midi')
    		}
    	}
 
-    function downloadFile(input, callBack) {
+    this.downloadFile = function(input, callBack) {
 		if(!input)
 			return;
 		var oReq = new XMLHttpRequest();
 		oReq.open("GET", input, true);
 		oReq.responseType = "arraybuffer";
 		oReq.onload = function (oEvent) {
-			callBack(oEvent.currentTarget.response);
+            var buffer = oEvent.currentTarget.response;
+            var midiFile = new MIDIFile(buffer);
+			callBack(midiFile);
 		};
 		oReq.send(null);
    	}
 
-   	//todo: put this in a module ?
-   	$scope.getMidiNotes = function (midi){
+
+   	this.getMidiNotes = function (midi){
    		// https://github.com/nfroidure/MIDIFile
 	    var eventsChunk = midi.getMidiEvents();
 
@@ -52,49 +54,29 @@ angular.module('midi')
         return events;
    	}
 
-    var midiPlayer;
-    navigator.requestMIDIAccess().then(function(midiAccess) {
+   
 
-        var outputs = [];
-        var iter =  midiAccess.outputs.values();
-        var output;
-        while(output = iter.next()) {
-            if(output.done) {
-                break;
-            }
-            var opt = document.createElement('option');
-            opt.value = output.value.id;
-            opt.text = output.value.name;
-            outputs.push(opt);
+    MIDI.loadPlugin({
+        soundfontUrl: "vendors/MIDI.js-master/examples/soundfont/",
+        instrument: "acoustic_grand_piano",
+        onprogress: function(state, progress) {
+            console.log(state, progress);
+        },
+        onsuccess: function() {
+            MIDI.setVolume(0, 127);
         }
-
-        // Creating player
-        midiPlayer = new MIDIPlayer({
-          'output': midiAccess.outputs.get(outputs[0].value)
-        });
-
-    }, function() {
-        console.log('No midi output');
     });
     
-    //todo: put this in a module ?
-    $scope.playMidi = function(midi){
-        // Loading the midiFile instance in the player
-        midiPlayer.load(midi);
-        midiPlayer.play(function() {
-            console.log('Play ended');
-        });
+    this.playMidiNote = function(note){
+
+        // play the note
+        MIDI.noteOn(0, note.param1, note.param2, 0);
+        MIDI.noteOff(0, note.param1, (note.stopTime - note.playTime) /1000);
     }
 
-    //LegionsOfTheSerpant
-    downloadFile('assets/Partitions/test.mid', function(buffer){
-    	var midiFile = new MIDIFile(buffer);
-    	$scope.$apply(function(){
-    		$scope.midiFile = midiFile;
-            $scope.playMidi(midiFile)
-    	})
-    	
-    })
+
+
+    return this;
   
    
 

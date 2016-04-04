@@ -18,6 +18,21 @@
 		<script src="node_modules/midiplayer/dist/MIDIPlayer.js" type="text/javascript"></script>
 		<script src="node_modules/midifile/node_modules/midievents/dist/MIDIEvents.js" type="text/javascript"></script>
 
+		<!-- polyfill -->
+		<script src="vendors/MIDI.js-master/inc/shim/Base64.js" type="text/javascript"></script>
+		<script src="vendors/MIDI.js-master/inc/shim/Base64binary.js" type="text/javascript"></script>
+		<script src="vendors/MIDI.js-master/inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+		<!-- midi.js package -->
+		<script src="vendors/MIDI.js-master/js/midi/audioDetect.js" type="text/javascript"></script>
+		<script src="vendors/MIDI.js-master/js/midi/gm.js" type="text/javascript"></script>
+		<script src="vendors/MIDI.js-master/js/midi/loader.js" type="text/javascript"></script>
+		<script src="vendors/MIDI.js-master/js/midi/plugin.audiotag.js" type="text/javascript"></script>
+		<script src="vendors/MIDI.js-master/js/midi/plugin.webaudio.js" type="text/javascript"></script>
+		<script src="vendors/MIDI.js-master/js/midi/plugin.webmidi.js" type="text/javascript"></script>
+		<!-- utils -->
+		<script src="vendors/MIDI.js-master/js/util/dom_request_xhr.js" type="text/javascript"></script>
+		<script src="vendors/MIDI.js-master/js/util/dom_request_script.js" type="text/javascript"></script>
+
     	<!-- icons -->
     	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
@@ -28,7 +43,7 @@
         <script src="components/home/HomeController.js"></script>
          
 		<script src="shared/midi/midi.module.js"></script>
-		<script src="shared/midi/MidiController.js"></script>
+		<script src="shared/midi/midiProvider.js"></script>
 		<script src="shared/midi/midiPartitionDirective.js"></script>
         
         <script src="shared/audio/audio.module.js"></script>

@@ -6,7 +6,7 @@ angular.module('audio').directive('spectrogramDirective', function () {
 		var d3Container = d3.select(container);
         
         var canvas  = d3Container.append("canvas")
-            .style("position", "absolute");
+            // .style("position", "absolute");
 
         var svg = d3Container.append("svg")
             .style("position", "absolute");
@@ -19,6 +19,8 @@ angular.module('audio').directive('spectrogramDirective', function () {
             .attr("class", "y axis")
             .style("fill", "none");
 
+        var maxValue = 0;
+        var minValue = 0;
         // function reduceDimensions(array, dimensions){
         //     if(array.length <= dimensions) return array;
             
@@ -35,6 +37,7 @@ angular.module('audio').directive('spectrogramDirective', function () {
   
 
     	function update(data){
+
             var canvasWidth = 960,
                 canvasHeight = 200;
 
@@ -54,8 +57,12 @@ angular.module('audio').directive('spectrogramDirective', function () {
                 .domain([0, imageHeight])
                 .range([canvasHeight, 0]);
 
+            //todo: takes the last column in the data, wich is not enough robust if we don't update with only the las column changing
+            maxValue = 0.1;//Math.max.apply(null, Array.prototype.slice.call(data[data.length - 1]).concat(maxValue));
+            minValue = -0.1;//Math.min.apply(null, Array.prototype.slice.call(data[data.length - 1]).concat(minValue));
+            var rangeValue = maxValue - minValue;
             var color = d3.scale.linear()
-                .domain([-0.1 , -0.05 , 0 , 0.05 ,0.1])
+                .domain([minValue, minValue + 1/5 * rangeValue, minValue + 2/5 * rangeValue, minValue + 3/5 * rangeValue, minValue + 4/5 * rangeValue, maxValue])
                 .range(["#0a0", "#6c0", "#ee0", "#eb4", "#eb9", "#fff"]);
 
             var xAxis = d3.svg.axis()
