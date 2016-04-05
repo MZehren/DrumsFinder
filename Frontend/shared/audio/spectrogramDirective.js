@@ -106,13 +106,7 @@ angular.module('audio').directive('spectrogramDirective', function () {
                         if(x in data && y in data[x])
                             intensity = data[x][y];
                         
-                        intensity = 0
-                        
-                        if(imageX % 6 == 0)
-                            intensity+=0.25;
-                        if(imageY % 12 == 0)
-                            intensity+= 0.25;
-                            
+                           
                         var c = d3.rgb(color(intensity));
                         
                     

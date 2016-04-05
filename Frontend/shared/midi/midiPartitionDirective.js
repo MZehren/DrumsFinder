@@ -1,69 +1,69 @@
-angular.module('midi').directive('midiPartitionDirective', function () {
-    
+angular.module('midi').directive('midiPartitionDirective', function() {
+
     function link(scope, element, attrs) {
-    	//see http://bl.ocks.org/mbostock/6232620
-    	var container = element[0];
-		var svg = d3.select(container)
-            .append("svg")
+        //see http://www.vexflow.com/docs/tutorial.html
+        //and see musicXML
+        var container = element[0];
+        // var canvas = d3.select(container)
+        //           .append("canvas")
+        //           .attr("width", 700)
+        //           .attr("height", 100)
+
+        var canvas = $("canvas")[0];
+        var renderer = new Vex.Flow.Renderer(canvas, Vex.Flow.Renderer.Backends.CANVAS);
+
+        var ctx = renderer.getContext();
+        var stave = new Vex.Flow.Stave(10, 0, 500);
+        stave.addClef("treble").setContext(ctx).draw();
+
+        function update(value, oldValue) {
+            if (value == oldValue) return;
+
+            for (var barIdx in value) {
+                var bar = value[barIdx];
+               
+
+                var notes = []
+                for(var noteIdx in bar){
+                  var note = bar[noteIdx]
+                  notes.push( new Vex.Flow.StaveNote(note))
+                }
+
+            
+
+                // Create a voice in 4/4
+                var voice = new Vex.Flow.Voice({
+                    num_beats: 4,
+                    beat_value: 4,
+                    resolution: Vex.Flow.RESOLUTION
+                });
+
+                // Add notes to voice
+                voice.addTickables(notes);
+
+                // Format and justify the notes to 500 pixels
+                var formatter = new Vex.Flow.Formatter().
+                joinVoices([voice]).format([voice], 500);
+
+                // Render voice
+                voice.draw(ctx, stave);
+
+            }
 
 
 
-    	function update(value, oldValue){
-            if(value == oldValue) return;
+        }
 
+        scope.$watch("notes", update);
 
-
-            //creating starting and ending time for each events.
-            var events = value.slice(0,100);
-
-
-            var width = element.parent().width();
-            var height = width/2;//element.parent().height() || element.parent().width();;
-            var maxWidth = d3.max(events, function(d){return d.playTime;});
-            var maxHeight = d3.max(events, function(d){return d.param1;});
-
-            var x = d3.scale.linear()
-                .domain([0, maxWidth])
-                .range([0, width]);
-
-            var y = d3.scale.linear()
-                .domain([0, maxHeight])
-                .range([0, height]);
-
-            svg.attr("width", width)
-                .attr("height", height);
-
-            svg.selectAll(".bar")
-                .data(events)
-                .enter().append("g")
-                    .attr("class", "bar")
-                    .attr("transform", function(d) { 
-                        return "translate(" + x(d.playTime) + "," + y(d.param1) + ")"; 
-                    })
-                    .on("click", function(d){
-                        console.log(d);
-                        scope.playNote(d);
-                    })
-                .append("rect")
-                    .attr("width", function(d){ 
-                        return   x(d.stopTime - d.playTime);
-                    })
-                    .attr("height", function(d){ return 10});
-
-
-
-    	}
-
-    	scope.$watch("notes", update);
-    	    
     }
     return {
         restrict: 'E',
-        scope : {
-        	notes : '=',
-            playNote : "="
+        scope: {
+            notes: '=',
+            playNote: "="
         },
+        template: '<canvas width=700 height=100></canvas>',
         link: link
     };
 });
-

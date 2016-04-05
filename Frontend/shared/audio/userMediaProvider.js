@@ -53,8 +53,7 @@ angular.module('audio')
     
     //todo: use broadcast instead of the watch ?
     //todo: when hitting a breakpoint after the first analyser make the recording to stop..
-    this.wave
-    this.fftBuffer = new Float32Array( fftSize );
+    this.signal = { fftBuffer : new Float32Array( fftSize ) , wave: undefined};
     this.tuner = {pitch: undefined, note : undefined}; //I have to encapsulate pitch and note in tuner as myThis.pitch = x change the ref of the var.
     var intervalPromise = null;
     
@@ -62,10 +61,10 @@ angular.module('audio')
         var step = (fftSize /  myThis.audioContext.sampleRate) * 1000;
         intervalPromise = $interval(
             function(){
-                analyser.getFloatTimeDomainData( myThis.fftBuffer );
-                myThis.tuner.pitch = autoCorrelate(myThis.fftBuffer,  myThis.audioContext.sampleRate);
+                analyser.getFloatTimeDomainData( myThis.signal.fftBuffer );
+                myThis.tuner.pitch = autoCorrelate(myThis.signal.fftBuffer,  myThis.audioContext.sampleRate);
                 myThis.tuner.note = noteFromPitch( myThis.tuner.pitch);
-                // console.log(buf);
+               
             }, step);
     }
     
