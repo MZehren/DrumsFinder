@@ -128,6 +128,11 @@ angular.module('midi')
     }
 
     this.noteNumber={
+        40 : "a/4",
+        41 : "a/4",
+        42 : "a/4",
+        43 : "a/4",
+        44 : "a/4",
         45 : "a/4",
         46 : "a/4", 
         47 : "a/4",
@@ -139,6 +144,24 @@ angular.module('midi')
         53 : "a/4",
         54 : "a/4",
         55 : "a/4",
+        56 : "a/4",
+        57 : "a/4",
+        58 : "a/4",
+        59 : "a/4",
+        60 : "a/4",
+        61 : "a/4",
+        62 : "a/4",
+        63 : "a/4",
+        64 : "a/4",
+        65 : "a/4",
+        66 : "a/4",
+        67 : "a/4",
+        68 : "a/4",
+        69 : "a/4",
+        70 : "a/4",
+        71 : "a/4",
+        72 : "a/4",
+
     }
 
     // from 1.002 to "q"
@@ -169,10 +192,15 @@ angular.module('midi')
 
     //from 45 to "a#/1"
     function noteNumberToKey(note){
-        return myThis.noteNumber[note.noteNumber];
+        var result = myThis.noteNumber[note.noteNumber];
+        if(!result){
+            console.log("noteNumberToKey error");
+            debugger;
+        }
+        return result
     }
 
-    this.getMidiSheetMusic = function(midiPlayer){
+    this.getMidiSheetMusic = function(midiPlayer){ //has to return with multiple voice, and botes at the good position
         var BPM = midiPlayer.BPM
         var notes = this.getMidiNotesEvents(midiPlayer)
         var tempo = midiPlayer.data.filter(function(d){return d[0].event.subtype == "setTempo"});
@@ -211,6 +239,7 @@ angular.module('midi')
             
 
         });    
+
         return sheet.slice(0,2);
 
 

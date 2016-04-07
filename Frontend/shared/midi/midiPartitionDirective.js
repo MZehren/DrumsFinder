@@ -13,23 +13,34 @@ angular.module('midi').directive('midiPartitionDirective', function() {
         var renderer = new Vex.Flow.Renderer(canvas, Vex.Flow.Renderer.Backends.CANVAS);
 
         var ctx = renderer.getContext();
-        var stave = new Vex.Flow.Stave(10, 0, 500);
-        stave.addClef("treble").setContext(ctx).draw();
+
 
         function update(value, oldValue) {
             if (value == oldValue) return;
 
-            for (var barIdx in value) {
-                var bar = value[barIdx];
-               
 
+            var staveWidth = 500;
+            canvas.width = staveWidth * value.length;
+
+            for (var barIdx in value) {
+
+                //create the stave, one stave each bar.
+                var bar = value[barIdx];
+                var stave = new Vex.Flow.Stave( 10 + staveWidth * barIdx, 0, staveWidth);
+                if(!barIdx)
+                  stave.addClef("treble")
+                stave.setContext(ctx).draw();
+
+                //create the note
                 var notes = []
                 for(var noteIdx in bar){
                   var note = bar[noteIdx]
                   notes.push( new Vex.Flow.StaveNote(note))
                 }
 
-            
+                // TODO Create the beams
+                // var beam = new Vex.Flow.Beam(notes);
+
 
                 // Create a voice in 4/4
                 var voice = new Vex.Flow.Voice({
@@ -43,7 +54,7 @@ angular.module('midi').directive('midiPartitionDirective', function() {
 
                 // Format and justify the notes to 500 pixels
                 var formatter = new Vex.Flow.Formatter().
-                joinVoices([voice]).format([voice], 500);
+                joinVoices([voice]).format([voice], staveWidth);
 
                 // Render voice
                 voice.draw(ctx, stave);
@@ -63,7 +74,7 @@ angular.module('midi').directive('midiPartitionDirective', function() {
             notes: '=',
             playNote: "="
         },
-        template: '<canvas width=700 height=100></canvas>',
+        template: '<div style="overflow:auto;" ><canvas></canvas></div>',
         link: link
     };
 });
