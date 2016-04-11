@@ -12,15 +12,20 @@ angular.module('midi').directive('midiPianoRollDirective', function () {
             if(value == oldValue) return;
 
 
-
-            //creating starting and ending time for each events.
-            var events = value.slice(0,100);
-
+            //making each events unique when notes are playing in parallel.
+            var events = []
+            value.map(function(d){
+                for(var noteIdx in d.noteNumber){
+                    var shallowCopy = jQuery.extend({}, d) 
+                    shallowCopy.noteNumber = d.noteNumber[noteIdx];
+                    events.push(shallowCopy);
+                }
+            });
 
             var width = element.parent().width();
             var height = width/2;//element.parent().height() || element.parent().width();;
             var maxWidth = d3.max(events, function(d){return d.startTime;});
-            var maxHeight = d3.max(events, function(d){return d.noteNumber;});
+            var maxHeight = d3.max(events, function(d){return d.noteNumber;}); //should be 127 for midi
 
             var x = d3.scale.linear()
                 .domain([0, maxWidth])

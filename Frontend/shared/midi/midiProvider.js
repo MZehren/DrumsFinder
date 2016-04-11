@@ -1,117 +1,8 @@
 angular.module('midi')
 .factory("midiProvider", function ($http, $interval, $timeout) {
+
+    //----------------- UTILS FUNCTIONS
     var myThis = this;
-// // https://github.com/nfroidure/MIDIFile
- //    var myThis = this;
-	// // File handlers
-	// function readFile(input) {
-	// 	var reader = new FileReader();
-	// 	reader.readAsArrayBuffer(input.files[0]);
-	// 	reader.onloadend = function(event) {
-	// 		playFile(event.target.result);
- //   		}
- //   	}
-
- //    this.downloadFile = function(input, callBack) {
-	// 	if(!input)
-	// 		return;
-	// 	var oReq = new XMLHttpRequest();
-	// 	oReq.open("GET", input, true);
-	// 	oReq.responseType = "arraybuffer";
-	// 	oReq.onload = function (oEvent) {
- //            var buffer = oEvent.currentTarget.response;
- //            var midiFile = new MIDIFile(buffer);
-	// 		callBack(midiFile);
-	// 	};
-	// 	oReq.send(null);
- //   	}
-   	// this.getMidiNotesEvents = function (midi){
-   	// 	
-	   //  var eventsChunk = midi.getMidiEvents();
-    //     //creating starting and ending time for each events.
-    //     var events = [];
-    //     var eventsLookup = {};
-    //     eventsChunk.forEach(function(event){
-    //         if(event.type != MIDIEvents.EVENT_MIDI_NOTE_ON && event.type != MIDIEvents.EVENT_MIDI_NOTE_OFF) return;
-
-    //         if(event.param1 in eventsLookup && eventsLookup[event.param1]){
-    //         	if(event.type != MIDIEvents.EVENT_MIDI_NOTE_OFF)
-    //         		console.error("error !")
-
-    //         	var startEvent = eventsLookup[event.param1]
-    //         	var stopEvent = event
-
-    //         	startEvent.stopTime = stopEvent.playTime
-    //             events.push(startEvent);
-    //             eventsLookup[event.param1] = undefined;
-    //         }
-    //         else{
-    //             eventsLookup[event.param1] = event;
-    //         }
-    //     });
-
-    //     return events;
-   	// }
-
-
-    MIDI.loadPlugin({
-        soundfontUrl: "vendors/MIDI.js-master/examples/soundfont/",
-        instrument: "acoustic_grand_piano",
-        onprogress: function(state, progress) {
-            console.log(state, progress);
-        },
-        onsuccess: function() {
-            MIDI.setVolume(0, 127);
-        }
-    });
-
-    this.loadMidiFile = function(url, onSuccess){
-
-        MIDI.Player.loadFile(url,  
-            function(midi){
-                onSuccess(MIDI.Player);
-            },
-            function(progress){
-            },
-            function(error){
-                console.log(error);
-            });
-    }
-
-    //todo: handle multiple voice event (synchronous notes)
-    this.getMidiNotesEvents = function (midiPlayer){
-
-        var eventsChunk = midiPlayer.data;
-        //creating starting and ending time for each events.
-        var events = [];
-        var eventsLookup = {};
-        var cursor = 0;
-        eventsChunk.forEach(function(data){
-            var event = data[0].event;
-            cursor += event.deltaTime;
-            event.startTime = cursor;
-            if(event.subtype != "noteOn" && event.subtype != "noteOff") return;
-
-            if(event.noteNumber in eventsLookup && eventsLookup[event.noteNumber]){
-               if(event.subtype != "noteOff")
-                   console.error("error !")
-
-               var startEvent = eventsLookup[event.noteNumber]
-               var stopEvent = event
-
-               startEvent.stopTime = cursor;
-
-               events.push(startEvent);
-               eventsLookup[event.noteNumber] = undefined;
-           }
-           else{
-            eventsLookup[event.noteNumber] = event;
-        }
-    });
-
-        return events;
-    }
-
     // in 4/4 time signature
     this.noteDuration={
         "w"     : 4,
@@ -127,40 +18,21 @@ angular.module('midi')
         "32d"   : 6/32
     }
 
-    this.noteNumber={
-        40 : "a/4",
-        41 : "a/4",
-        42 : "a/4",
-        43 : "a/4",
-        44 : "a/4",
-        45 : "a/4",
-        46 : "a/4", 
-        47 : "a/4",
-        48 : "a/4",
-        49 : "a/4",
-        50 : "a/4",
-        51 : "a/4",
-        52 : "a/4",
-        53 : "a/4",
-        54 : "a/4",
-        55 : "a/4",
-        56 : "a/4",
-        57 : "a/4",
-        58 : "a/4",
-        59 : "a/4",
-        60 : "a/4",
-        61 : "a/4",
-        62 : "a/4",
-        63 : "a/4",
-        64 : "a/4",
-        65 : "a/4",
-        66 : "a/4",
-        67 : "a/4",
-        68 : "a/4",
-        69 : "a/4",
-        70 : "a/4",
-        71 : "a/4",
-        72 : "a/4",
+    this.noteNumberMap={
+        "-1" : "b/4"
+    }
+    var notesNames = [ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" ];
+    for(var i = 0; i < 127; i++) {
+        var index = i,
+            key = notesNames[index % 12],
+            octave = ((index / 12) | 0) ; //octave = ((index / 12) | 0) - 1; // MIDI scale starts at octave = -1
+
+
+        key = key + '/';
+        
+        key += octave;
+        // noteMap[key] = i;
+        this.noteNumberMap[i] = key;
 
     }
 
@@ -191,8 +63,8 @@ angular.module('midi')
     }
 
     //from 45 to "a#/1"
-    function noteNumberToKey(note){
-        var result = myThis.noteNumber[note.noteNumber];
+    function noteNumberToKey(noteNumber){
+        var result = myThis.noteNumberMap[noteNumber];
         if(!result){
             console.log("noteNumberToKey error");
             debugger;
@@ -200,9 +72,118 @@ angular.module('midi')
         return result
     }
 
+
+    MIDI.loadPlugin({
+        soundfontUrl: "vendors/MIDI.js-master/examples/soundfont/",
+        instrument: "acoustic_grand_piano",
+        onprogress: function(state, progress) {
+            console.log(state, progress);
+        },
+        onsuccess: function() {
+            MIDI.setVolume(0, 127);
+        }
+    });
+
+    this.loadMidiFile = function(url, onSuccess){
+
+        MIDI.Player.loadFile(url,  
+            function(midi){
+                onSuccess(MIDI.Player);
+            },
+            function(progress){
+            },
+            function(error){
+                console.log(error);
+            });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    //--------------- BEHAVIOR FUNCTIONS ----------------
+
+
+    //todo: handle multiple voice event (synchronous notes)
+    //return array of the form [{noteNumber : [-1 / 127], startTime : absolute, stopTime : absolute, deltaTime : relative to previous note}]
+    this.getMidiNotesEvents = function (midiPlayer, addSilence){
+
+        var eventsChunk = jQuery.extend(true, [],midiPlayer.data);
+        //creating starting and ending time for each events.
+        var events = [];
+        var eventsLookup = {};
+        var cursor = 0;
+
+        //cluster starting and ending events of the same note
+        eventsChunk.forEach(function(data){
+            var event = data[0].event;
+            cursor += event.deltaTime;
+            event.startTime = cursor;
+            if(event.subtype != "noteOn" && event.subtype != "noteOff") return;
+
+            if(event.noteNumber in eventsLookup && eventsLookup[event.noteNumber]){
+               if(event.subtype != "noteOff")
+                   console.error("Midi parsing error ! NoteOn event already occured.")
+
+               var startEvent = eventsLookup[event.noteNumber]
+               var stopEvent = event
+
+               startEvent.stopTime = cursor;
+
+               events.push(startEvent);
+               eventsLookup[event.noteNumber] = undefined;
+            }
+            else{
+                eventsLookup[event.noteNumber] = event;
+            }
+        });
+
+        //cluster parallels events
+        //todo: I assume that in the same voice parallels notes start and end at the same time !
+        eventsLookup = {} //events by starting time
+        events.forEach(function(event){
+            if(!(event.startTime in eventsLookup))
+                eventsLookup[event.startTime] = [];
+            eventsLookup[event.startTime].push(event);
+        })
+        events = []; //transform eventsLookup to array.. dirty I think..
+        for(eventIdx in eventsLookup){
+            var parallelEvents = eventsLookup[eventIdx];
+            parallelEvents[0].noteNumber = parallelEvents.map(function(d){return d.noteNumber});
+            events.push(parallelEvents[0])
+        }
+
+
+
+
+        //add silence between events if they aren't together
+        if(addSilence){
+            var lastStopEvent = 0;
+            events.forEach(function(event, idx){
+                if(lastStopEvent < event.startTime){
+                    events.splice(idx, 0, {noteNumber: ["-1"], startTime: lastStopEvent, stopTime: event.startTime});
+                }
+
+                lastStopEvent = event.stopTime;
+            });
+        }
+
+        return events;
+    }
+
+
+    //return array representing the sheet music of the shape bar/notes
+    //[[{keys:["a/4"], duration "w"}], ]
     this.getMidiSheetMusic = function(midiPlayer){ //has to return with multiple voice, and botes at the good position
         var BPM = midiPlayer.BPM
-        var notes = this.getMidiNotesEvents(midiPlayer)
+        var notes = this.getMidiNotesEvents(midiPlayer, true)
         var tempo = midiPlayer.data.filter(function(d){return d[0].event.subtype == "setTempo"});
         var timeSignature = midiPlayer.data.filter(function(d){return d[0].event.subtype == "timeSignature"})
 
@@ -212,35 +193,27 @@ angular.module('midi')
         var barDuration = 0;
         notes.forEach(function(note){
             var noteDuration = noteBeatDuration(note, timeSignature, tempo);
-            var noteKey  = noteNumberToKey(note);
-            var noteName = noteBeatName(noteDuration);
+            var noteKey  = note.noteNumber.map(function(d){return noteNumberToKey(d)}); //todo order keys https://github.com/0xfe/vexflow/issues/104
+            var noteDurationName = noteBeatName(noteDuration);
+            
+            if(note.noteNumber[0] == "-1")
+                noteDurationName += "r";
 
 
+            bar.push({keys : noteKey, duration: noteDurationName});
             barDuration += noteDuration
             if(barDuration == 4){
-                bar.push({keys :  [noteKey], duration: noteName})
                 sheet.push(bar.slice(0))
                 bar = []
                 barDuration = 0;
             }
             else if (barDuration > 4){    
-
-                var remainingTime = 4 - (barDuration - noteDuration);
-                var remainingNote = noteBeatName(remainingTime);
-
-                bar.push({ keys: ["b/4"], duration: remainingNote+"r" });
-                sheet.push(bar.slice(0));
-                bar = [{keys : [noteKey], duration: noteName}];
-                barDuration = 0;
+                console.error("not good bar !")
             }
-            else{
-                bar.push({keys : [noteKey], duration: noteName});
-            }
-            
 
         });    
 
-        return sheet.slice(0,2);
+        return sheet;
 
 
 
