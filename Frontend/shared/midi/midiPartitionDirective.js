@@ -4,22 +4,21 @@ angular.module('midi').directive('midiPartitionDirective', function() {
         //see http://www.vexflow.com/docs/tutorial.html
         //and see musicXML
         var container = element[0];
-        // var canvas = d3.select(container)
-        //           .append("canvas")
-        //           .attr("width", 700)
-        //           .attr("height", 100)
 
         var canvas = $("canvas")[0];
+        // var d3Cursor = d3.select("svg").append("line")
+        //     .attr("x1", 0)
+        //     .attr("y1", 0)
+        //     .attr("x2", 0)
+        //     .attr("y2", 100);
+        
         var renderer = new Vex.Flow.Renderer(canvas, Vex.Flow.Renderer.Backends.CANVAS);
-
         var ctx = renderer.getContext();
-
+        var staveWidth = 500;
 
         function update(value, oldValue) {
             if (value == oldValue) return;
 
-
-            var staveWidth = 500;
             canvas.width = staveWidth * value.length;
 
             for (var barIdx in value) {
@@ -66,15 +65,27 @@ angular.module('midi').directive('midiPartitionDirective', function() {
         }
 
         scope.$watch("notes", update);
+        
+        //todo: remove listener
+        scope.$watch("midi", function(midi){
+            if(!midi) return;
+            
+            midi.addListener(function(note){
+                var tempo = midi.data.filter(function(d){return d[0].event.subtype == "setTempo"});
+                var millisecondsPerBeat = tempo[0][0].event.microsecondsPerBeat / 1000;
+                var cursorLeft =  (note.now / (millisecondsPerBeat * 4)) * staveWidth;
+            })
+        });
 
     }
     return {
         restrict: 'E',
         scope: {
             notes: '=',
-            playNote: "="
+            playNote: "=",
+            midi: "=" //todo: send the midi ?
         },
-        template: '<div style="overflow:auto;" ><canvas></canvas></div>',
+        template: '<div style="overflow:auto;"><canvas></canvas></div>',
         link: link
     };
 });

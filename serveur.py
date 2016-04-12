@@ -10,11 +10,11 @@ class CORSRequestHandler (SimpleHTTPRequestHandler):
         SimpleHTTPRequestHandler.end_headers(self)
 
 if __name__ == '__main__':
-	PORT = 8090
+	PORT = 80
 	Handler = CORSRequestHandler
 	httpd = SocketServer.TCPServer(("", PORT), Handler)
 
-	print "serving at port", PORT
+	print "http://localhost:" + str(PORT)
 	httpd.serve_forever()
 
 

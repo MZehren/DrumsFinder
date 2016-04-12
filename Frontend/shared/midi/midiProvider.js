@@ -248,7 +248,11 @@ angular.module('midi')
 
 
 
-
+    // this.getStaveDuration = function(midi){
+    //     var tempo = midi.data.filter(function(d){return d[0].event.subtype == "setTempo"});
+    //     var timeSignature = midi.data.filter(function(d){return d[0].event.subtype == "timeSignature"})
+    //     
+    // }
     
     this.playMidiNote = function(note){
 
