@@ -1,9 +1,9 @@
+#Open a midi file and a wav and output labelled window of the wave (need to be maintained with the new python midi
 import os
 import numpy as np 
 
 from shared import fft
 from shared import midi
-
 
 wavPath = "./samples/tabs/LegionsOfTheSerpantVoiceLess.wav"
 midPath = "./samples/tabs/LegionsOfTheSerpant.mid"

@@ -1,5 +1,6 @@
 import functools
 
+#hand made midi parser, It should be better to use midiPython instead
 class HeaderChunk:
     
     def __init__(self, chunk = None):
