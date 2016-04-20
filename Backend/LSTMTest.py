@@ -4,6 +4,7 @@ import fractions
 from keras.models import Sequential
 from keras.layers.recurrent import LSTM
 from keras.layers.core import Dense, Activation, Dropout
+import numpy as np
 
 #returns an array of vectors wich are the drum played for each window in the music
 def loadMidiDrums(path):  
@@ -90,8 +91,8 @@ def getLSTMModel(maxLength, numFeatures):
     model.add(LSTM(512, return_sequences=False))
     model.add(Dropout(0.2))
     model.add(Dense(numFeatures))
-    model.add(Activation('softmax'))
-    model.compile(loss='categorical_crossentropy', optimizer='adam')
+    model.add(Activation('sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='adam')
     
     return model
 
@@ -100,7 +101,7 @@ def trainModel(model, song, maxLength):
     X_train = [[song[i] for i in range(start, start + maxLength) ] for start in range(0, len(song)-maxLength)]
     Y_train = [song[i] for i in range(maxLength, len(song))]
     
-    model.fit(X_train, Y_train, nb_epoch=1, batch_size=64)
+    model.fit(X_train, Y_train, nb_epoch=5, batch_size=32)
     
 def testModel(model, maxLength):
 #         36 : 0,
@@ -132,8 +133,8 @@ def testModel(model, maxLength):
         X_test = [X_test[i % len(X_test)] for i in range(maxLength)]
         Y = X_test[maxLength % len(X_test)]
         
-        classes = model.predict_classes(X_test, batch_size=32)
-        proba = model.predict_proba(X_test, batch_size=32)
+        classes = model.predict_classes(np.asarray([X_test]), batch_size=1)
+        proba = model.predict_proba(np.asarray([X_test]), batch_size=1)
         
         print X_test
         print Y
@@ -141,6 +142,9 @@ def testModel(model, maxLength):
         print proba
         print
 
+
+    
+    
 songs = []
 # for root, dirs, files in os.walk("./samples/mididatabase/files.mididatabase.com/rock/metallica"):
 #     for idx, file in enumerate(files):
@@ -149,10 +153,15 @@ songs = []
 #             songs.append(loadMidiDrums(os.path.join(root, file)))
 songs.append(loadMidiDrums("./samples/tabs/LegionsOfTheSerpantTrunk.mid"))
 maxLength = 40
-model = getLSTMModel(maxLength, len(songs[0][0]))
+numFeatures = len(songs[0][0]) if songs else 9
+model = getLSTMModel(maxLength, numFeatures)
+testModel(model, maxLength)
+
+if os.path.isfile('LSTMTest.h5'): 
+    model.load_weights('LSTMTest.h5')
 
 for idx, song in enumerate(songs):
     trainModel(model, song, maxLength)
     print str(idx) + " trained"
-    
+    model.save_weights('LSTMTest.h5')
     testModel(model, maxLength)
