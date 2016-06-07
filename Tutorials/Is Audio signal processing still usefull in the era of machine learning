@@ -1,0 +1,18 @@
+Is Audio signal processing still usefull in the era of machine learning ?
+
+audio source separation (separate speech from noise) usage of dnn is only two years old in this team.
+
+see discriminative training:
+try with one hidden layer, then 2 then 3 ... then stop when no more improvment is done
+
+Input of the nn: 
+ - raw
+ - result from other rnn/ffnn -> what is the difference of creating a dnn with more layers
+
+SEE : realign channel based on TDOA !!!!
+
+voir slide 29 for spectral input features
+- Multi-resolution cochleagram (MRCG)
+- pitch
+
+seen unsupervised learning

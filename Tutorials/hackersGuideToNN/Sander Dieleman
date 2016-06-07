@@ -1,0 +1,22 @@
+Sander Dieleman (Google deepMind)
+Deep learning for music, galaxies and plankton
+
+decision tree : depending of the answer to the first question, a specific path will continue among the tree
+
+vanishing gradient : because of the non linearity which "compress" values between -1 & 1 (which was used in the hidden layers). The rectified liearity makes it better
+
+Why do data augmentation in the data by translkating and rotating the iunput instead of doing it in the model by rotating the filter of the convnet ? see benanne sur git-hub
+
+see Oxfordnet model: convolution model wich is great for image recognition
+
+content-based recomendation works less than recommendation from collaborative filtering
+t-SNE : algorithm to project in 2D multidimensional points
+
+
+
+Leslie Valiant (prix turing / apprentissage PAC)
+What can be automated: a viewpoint from learning and Evolution
+what machine learning should be abble to settle ?
+
+
+perceptron = linear classifier ?! = shallow classifier

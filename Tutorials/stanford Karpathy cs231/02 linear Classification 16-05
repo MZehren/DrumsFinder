@@ -1,0 +1,87 @@
+Linear classification:
+
+Contrairement au k-nearest-neighboors, où l'on va regarder la similitudes avec tous les autres échantillons, ici on va utiliser la matrice W (aprise sur les données) pour calculer l'apartenance à une classe.
+
+la fonction de score donne le score d'apartenance d'une image à un label.
+linear mapping, the score function is calculated with f(xi, W, b) = W.xi + b
+W = weights matrix of (K, D)
+xi = ith input of (D)
+b = bias of (K)
+
+
+ex: if images of 4 pixel -> D = 4. If 3 classes -> K = 3. And 100 data points
+
+              [A]
+[1, 2, 3, 4]  [B]     [b1]
+[5, 6, 7, 8]  [C]     [b2]
+[9,10,11,12]  [D]  +  [b3]
+
+f(x) = ax+b 
+
+f(x) is the score function. It says that more the result is positive, more the data is in the class.
+we can compute the vector of weights for which the score is 0 to visualise the weights trained.
+So basicaly : f(x) = 0
+in the example above, for the first class: 1A + 2B + 3C + 4D + b1 = 0  
+
+
+alternativement on peut prendre le dot product (négatif) d'une classe par rapport à une entrée et voir la distance minimal (au lieu d'une distance L1 ou L2) (somme des produits des entrées correspondantes des deux vecteurs / équivalent au produite de la magnitudes de chaque vecteur multiplié par le cos de leur angle / c a d à quel point les deux vecteurs sont alignées)
+intuitivement si les poids apprennent à reconnaitre une image de bateau, les pixels correspondant à la couleur bleu vont avoir un poids importants, une image contenant du bleu sera également plus proche de ce template par le dot product.
+
+
+note: le biais dans Wx+b peut être contenu dans W a condition de rajouter une dimension aux entrées toujours équivalente à 1
+[1, 2, 3, 4, b1] [A]  = 1A + 2B + 3C + 4D + b1
+                 [B]
+                 [C]
+                 [D]
+                 [1]
+
+
+LOSS FUNCTION: tell the error between the cost and the ground truth
+Support vector machine score = calcule la différence entre le score des classes fausses, par rapport au score de la classe réelle, et vérifie que la différence est supérieur à un delta. sinon, l'erreur augmente.
+donc la perte ne tient pas compte si le score d'une classe fausse est très inférieur au score de la bonne classe, tant que la différence est juste supérieure au delta. Elle tient compte si la prédiction est correcte, mais la perte augmentera quand même si la différence est inférieur à delta.
+Li=∑j≠yi max(0,sj−syi+Δ)
+
+le fait d'utiliser le seuil 0 s'appelle le "hinge loss". il est également possible de prendre le hing loss squared max(0, _)² pour pénaliser les erreurs importantes
+
+
+régularisation:
+le problème avec le loss SVM est qu'il est possible de trouver des paramètres peu efficaces, de les multiplier par un facteur lambda, et d'obtenir une perte moins importante, alors que l'on a uniquement multiplié uniformément ces paramètres. Ils ne sont donc pas plus efficaces relativement à un autre ensemble de paramètres, mais le score est mieux dans l'absolu. On va donc chercher à régulariser ces paramètres en limitant leur croissance, ce qui permet de trouver toutes les features nécessaire à la classification. En d'autre termes, la régularisation permet de favoriser un ensemble de paramètres plus diffus, où les valeurs de chaque membre son peu élevées. en d'autre terme, la force de la régularisation change à quel point on autorise les paramètres à avoir de l'importance, oû on les restreind afin qu'ils soient plus diffus. Ce qui va engendrer de plus petites différences entre la perte de chaque classe.
+
+
+
+
+SOFTMAX CLASSIFIER:
+SVM est un classifier, Softmax est aussi un classifier qui utilise une autre fonction pour le coût : le cross-entropy loss
+Li=−fyi+log∑jefj
+
+
+
+CROSS-ENTROPY: En théorie de l'information, l'entropie croisée entre deux lois de probabilité mesure le nombre de bits moyen nécessaires pour identifier un événement issu d'un espace probabiliste, si l'encodage est basé sur une loi de probabilité {\displaystyle q} , plutôt que sur une "vraie" loi {\displaystyle p} .
+	ENTROPIE :L'entropie de Shannon, due à Claude Shannon, est une fonction mathématique qui, intuitivement, correspond à la quantité d'information contenue ou délivrée par une source d'information. Cette source peut être un texte écrit dans une langue donnée, un signal électrique ou encore un fichier informatique quelconque (collection d'octets).
+
+
+LOG PROBABILITIES: it's simply the logarithm of a probability (log(0) = undefined (lim -> -inf) ; log(1) = 0). Thus log probabilities can only represent non-zero probabilities. probabilities are in the interval [0,1], so the log is negative.
+the product of probabilities is the addition of their log: log(x.y) = log(x) + log(y)
+thus it is used for speed when it's needed to multiply propbabilitites, as the addition is faster.
+
+
+
+
+
+
+
+
+
+
+
+
+
+a quoi sert une fonction de coût autre que la distance L1 ou L2 ? qu'es ce qu'elle apporte de plus ?
+
+pourquoi dit on que le classifier softmax interprète les score de vecteur f comme des probabilitées de log non normalisées ?
+dans le softmax classifier, on dit que P(yi | xi, W) = e(fyi) / ∑(e(fj)). où yi est la classe réelle, et j est la classe j. 
+
+Pourquoi c'est la fonction de coût de SOFTMAX qui retournent des probabilités, et non la fonction de score ?
+	la fonction de loss retourne à quel point la prédiction est proche de la vérité terrain
+	La fonction de score retourne le score de chaque classe en fonction des paramètres appris.
+	le classifier softmax va normaliser ces scores de façon à ce qu'ils correspondent à des probabilités (c'est à dire des scores allant de 0 à 1 et qui s'additionnent jusque 1). Et il va calculer la différence entre ces probabilités et la vérité-terrain. 

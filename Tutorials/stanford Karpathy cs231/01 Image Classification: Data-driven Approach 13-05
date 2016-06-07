@@ -1,0 +1,18 @@
+L1 & L2:
+a = [0,0]; b = [1,1]
+
+l1(a,b) = |a1 - b1| + |a2 - b2| = 1 + 1 = 2
+
+(euclidean distance)
+l2(a,b) = sqrt((a1 - b1)² + (a2 - b2)²) = sqrt(1 + 1) = 1.72 
+
+
+Because of squaring each elements in L2, when there is a big difference in one index, the distance will be greater than L1. 
+
+
+Cross-Validation :
+Pourquoi ne pas tweeker les hyper-paramètres sur l'ensemble du jeu de test ? Pour l'overfitting ! ça veut dire que l'on overfit les hyperparamètres. 
+
+Si l'on veut tweeker les hyperparamètres, il est possible de séparer du set d'entrainement un set de validation le lequel le réseau ne va pas apprendre. Et une fois les hyperparamètres validés, le réseau peut être testé sur le set de test.
+
+ Dans le cas où il y n'y a beaucoup de bruits dans les données, il peut être intéressant d'effectuer plusieurs apprentissages indépendants pour chaque hyperparamètres et de constater la moyenne des performances de chaqu'un. Pour ce faire, l'ensemble des données d'entrainement utilisé pour la validation va être différent à chaque apprentissage. C'est la cross-Validation.
