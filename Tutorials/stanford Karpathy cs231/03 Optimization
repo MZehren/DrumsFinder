@@ -1,0 +1,16 @@
+Lors du calcul de la dérivé numérique de la loss function cad
+lim h->o (f(x+h) - f(x)) / h
+et que x soit un vecteur de tous les paramètres,
+on peut itérer sur chaque paramètres 
+for i in x:
+	fx = f(x)
+	x[i] = x[i]+h
+	fxh = f(x)
+ce qui permet d'obtenir la dérivé du paramètre i, sans utiliser les Maths. Mais on garder chaque paramètre comme étant x+h. mais c'est sans doute pas important car h->0
+
+
+Mini-batch gradient descent:
+Lorsqu'il y a beaucoup de données d'apprentissage, on peut obtimiser l'apprentissage en ne faisant la descente de gradient que tous les 256 samples. Cela permet de ne faire le calcul de la fonction de perte qu'une fois tous les 256 données et ça a du sens car les données d'apprentissage sont corréllées.
+questions :
+ - en quoi c'est une otpimisation, car calculer le loss pour 2 échantillons revient quand même à le calculer 2 fois (1 fois pour chaque échantillon). On ne fait la mise à jour des poids qu'une fois juste.
+ - Comment ça se passe lorsque les 2 échantillons du mini-batch n'ont pas le même y? Le loss peut être complément différent ? La mise à jour des poids dépend des données d'entrée, il faut faire une moyenne des deux ?
