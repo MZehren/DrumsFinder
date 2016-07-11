@@ -1,0 +1,5 @@
+interprétation du gradient:
+si f(x,y) = xy alors df/dx = y et df/dy = x
+si x = 4 et y = -3 alors df/dx = -3. 
+la dérivée sur x = -3 ce qui veut dire que si on augmente x d'une valeur h, alors on diminue la valeur de f de trois fois h.
+
