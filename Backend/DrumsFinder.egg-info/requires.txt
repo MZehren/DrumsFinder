@@ -1,0 +1,5 @@
+blas
+numpy
+scipy
+keras
+python-midi
