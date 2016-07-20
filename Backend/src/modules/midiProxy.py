@@ -66,17 +66,17 @@ def loadMidiDrums(path):
             timedEvents[event.tick].append(noteToVector[event.numberNote])
     
     timedEvents = {timeStamp : [1 if idx in notes else 0 for idx in xrange(9)] for timeStamp, notes in timedEvents.iteritems()}
-    
+    return timedEvents
     #get biggest frequency containing every notes
-    frequency = 0;
-    for event in drumsEvents:
-        frequency = fractions.gcd(frequency, event.tick)
+    # frequency = 0;
+    # for event in drumsEvents:
+    #     frequency = fractions.gcd(frequency, event.tick)
     
-    if frequency < 1:
-        print "frequency doesn't seem right"
-        return 
+    # if frequency < 1:
+    #     print "frequency doesn't seem right"
+    #     return 
     
-    return [timedEvents[time] if time in timedEvents else [0 for i in range(9)] for time in range(0, max(timedEvents.keys()), frequency)]
+    # return [timedEvents[time] if time in timedEvents else [0 for i in range(9)] for time in range(0, max(timedEvents.keys()), frequency)]
     
 
     

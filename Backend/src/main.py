@@ -1,15 +1,21 @@
 from modules import midiProxy
 from modules import kerasProxy
+from modules import audio
 
-songs = []
-# for root, dirs, files in os.walk("./samples/mididatabase/files.mididatabase.com/rock/metallica"):
-#     for idx, file in enumerate(files):
-#         if file.endswith(".mid"):
-#             print(os.path.join(root, file))
-#             songs.append(loadMidiDrums(os.path.join(root, file)))
-songs.append(midiProxy.loadMidiDrums("../Data/samples/tabs/LegionsOfTheSerpantTrunk.mid"))
+def loadFolder(path):
+	for root, dirs, files in os.walk("./samples/mididatabase/files.mididatabase.com/rock/metallica"):
+	    for idx, file in enumerate(files):
+	        if file.endswith(".mid"):
+	            print(os.path.join(root, file))
+	            songs.append(loadMidiDrums(os.path.join(root, file)))
 
-maxLength = 40
+
+midi = midiProxy.loadMidiDrums("../../Data/samples/tabs/LegionsOfTheSerpent.mid")
+wave = audio.load("../../Data/samples/tabs/LegionsOfTheSerpent.wav")
+samplingRate, spectrogram = audio.performFFTs(wave, frameDuration=0.1, windowStep=0.05)
+
+print samplingRate, spectrogram.shape
+audio.visualizeArray(spectrogram)
 # numFeatures = len(songs[0][0]) if songs else 9
 # model = getLSTMModel(maxLength, numFeatures)
 # testModel(model, maxLength)

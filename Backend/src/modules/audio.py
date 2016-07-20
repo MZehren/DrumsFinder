@@ -1,4 +1,4 @@
-from pylab import*
+import pylab as pl
 from scipy.io import wavfile
 
 import matplotlib.pyplot as plt
@@ -48,11 +48,11 @@ def visualizeArray(arrays, samplingRate = 44100, frameDuration=0.1):
 
     
 #frame duration shouldn't be below 0.05s, as the lowest frequency heard is 20Hz. 20Hz is one oscillation each 0.05s. If the frame is shorter, we can't find those frequencies which may help (as we hear them).
-def performFFTs(sound, frameDuration=0.1, windowStep=0.05):
-    samplingRate = sound[0]
-    normalizedSound = sound[1] #/ (2.**15) #divide each point by 2^15 to normalize. 2^15 is because of the encoding of the sound 
+def performFFTs(waveForm, frameDuration=0.1, windowStep=0.05):
+    samplingRate = waveForm[0]
+    normalizedSound = waveForm[1] #/ (2.**15) #divide each point by 2^15 to normalize. 2^15 is because of the encoding of the waveForm 
     channel0=0
-    if len(sound[1].shape) != 1 :
+    if len(waveForm[1].shape) != 1 :
         channel0 = normalizedSound[:,0] #todo: use both entries
     else :
         channel0 = normalizedSound
@@ -62,7 +62,7 @@ def performFFTs(sound, frameDuration=0.1, windowStep=0.05):
     frameFrequency = frameDuration * samplingRate
     stepFrequency = windowStep * samplingRate
     while cursor + frameFrequency < len(channel0) : #for each frame
-        frame = channel0[cursor: cursor + frameFrequency]
+        frame = channel0[int(cursor): int(cursor + frameFrequency)]
         cursor += stepFrequency
       
         amplitude = np.fft.fft(frame)
@@ -70,8 +70,8 @@ def performFFTs(sound, frameDuration=0.1, windowStep=0.05):
         
         #the fourier transform of the tone returned by the fft function contains both magnitude and phase information and is given in a complex representation (i.e. returns complex numbers). 
         #By taking the absolute value of the fourier transform we get the information about the magnitude of the frequency components.
-        nUniquePts = ceil((length + 1 ) / 2.0)
-        amplitude = amplitude[0:nUniquePts] #Since FFT is symmetric over it's centre, half the values are just enough.
+        nUniquePts = pl.ceil((length + 1 ) / 2.0)
+        amplitude = amplitude[0:int(nUniquePts)] #Since FFT is symmetric over it's centre, half the values are just enough.
         amplitude = abs(amplitude)
         
         # scale by the number of points so that the magnitude does not depend on the length of the signal or on its sampling frequency  
@@ -86,18 +86,18 @@ def performFFTs(sound, frameDuration=0.1, windowStep=0.05):
         else:
             amplitude[1:len(amplitude) -1] = amplitude[1:len(amplitude) - 1] * 2 # we've got even number of points fft
         
-        frequencies = arange(0, nUniquePts, 1.0) * (samplingRate / length); #Frequency (Hz)
+        frequencies = pl.arange(0, nUniquePts, 1.0) * (samplingRate / length); #Frequency (Hz)
         fftFreq = np.fft.fftfreq(len(amplitude), samplingRate/length)
         
 #         print frequencies
 #         print fftFreq
 #         print amplitude
         #result.append(np.array(20*log10(dbfsAmplitude)))
-        result.append(np.array(20*log10(amplitude / (2*32768)))) #todo: is it ok to do not use a logarithmic scale ?
+        result.append(np.array(20*pl.log10(amplitude / (2*32768)))) #todo: is it ok to do not use a logarithmic scale ?
         #result.append(np.array(amplitude))
 #         result.append({'frequencies': frequencies, 'power' : np.array(10*log10(amplitude))})
         
-    return np.array(result)
+    return samplingRate, np.array(result)
 
 
 # test = performFFTs(load("440_sine.wav"), frameDuration=0.1, windowStep = 0.002)
