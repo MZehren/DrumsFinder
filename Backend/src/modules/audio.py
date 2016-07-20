@@ -32,22 +32,23 @@ def getFrequencies(duration, samplingRate):
     fftFreq = np.fft.fftfreq(int(sampleNumber), duration)
     return np.linspace(0.0, (samplingRate / 2), sampleNumber / 2 + 1) #todo: why is it +1 ?
 
-def visualizeArray(arrays, samplingRate = 44100, frameDuration=0.1):
-
+def visualizeSpectrogram(array, samplingRate = 44100, frameDuration=0.1):
+    array = array.transpose()
     #todo: specify zmin, zmax (for colors)
-    extent = [0, (frameDuration / 2) * len(arrays[0]),float(samplingRate) / float(2000), 0] # [xmin, xmax, ymin, ymax]
+    extent = [0, (frameDuration / 2) * len(array[0]),float(samplingRate) / float(2000), 0] # [xmin, xmax, ymin, ymax]
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    cax = ax.imshow(arrays, cmap="nipy_spectral", extent=extent, aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
+    cax = ax.imshow(array, cmap="nipy_spectral", extent=extent, aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
     fig.colorbar(cax)
-    
-   
+
     plt.ylabel("frequencies (kHz)")
     plt.xlabel("time (s)")
     plt.show()
 
+
+
     
-#frame duration shouldn't be below 0.05s, as the lowest frequency heard is 20Hz. 20Hz is one oscillation each 0.05s. If the frame is shorter, we can't find those frequencies which may help (as we hear them).
+#frame duration shouldn't be below 0.1s, as the lowest frequency heard is 20Hz. 20Hz is one oscillation each 0.05s. If the frame is shorter than twice the distance, we can't find those frequencies which may help (as we hear them).
 def performFFTs(waveForm, frameDuration=0.1, windowStep=0.05):
     samplingRate = waveForm[0]
     normalizedSound = waveForm[1] #/ (2.**15) #divide each point by 2^15 to normalize. 2^15 is because of the encoding of the waveForm 

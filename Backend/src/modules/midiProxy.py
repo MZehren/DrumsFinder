@@ -2,16 +2,33 @@
 import midi
 import fractions
 
+
+
 #returns an array of vectors wich are the drum played for each window in the music
 def loadMidiDrums(path):  
     pattern = midi.read_midifile(path)
-#     TrackProgramChangeEvent = [[event for event in track if isinstance(event, midi.ProgramChangeEvent)] for track in pattern]
-#     drumTracks = [track for idx, track in enumerate(pattern) if len(TrackProgramChangeEvent[idx]) and TrackProgramChangeEvent[idx][-1].data == [10]]
-    for track in pattern: #todo: setting absolute value for tick. Cause I can't assign new value. so change this behavior !
-        absoluteTick = 0
+    if pattern.format != 1:
+        print "ERROR midi format not implemented"
+
+    #dictionnary to track the absolute position of each events in tick and time instead of relative to each other
+    absoluteTicks = {}
+    absoluteTimes = {}
+    for track in pattern:
+        tickCursor = 0
+        timeCursor = 0
+        currentBpm = 120
+        currentMpb = 500000
+        currentTicksPerBeat = 24
         for event in track:
-            absoluteTick += event.tick
-            event.tick = absoluteTick
+            if event.name == 'Set Tempo':
+                currentMpb = event.mpb
+            if event.name == 'Time Signature':
+                currentTicksPerBeat = event.metronome
+
+            tickCursor += event.tick
+            timeCursor += event.tick / currentTicksPerBeat * currentBpm / 60.
+            absoluteTicks[event] = tickCursor
+            absoluteTimes[event] = timeCursor
         
     tracks = [[event for event in track if isinstance(event, midi.NoteOnEvent) and event.channel == 9] for track in pattern] 
 
@@ -59,13 +76,13 @@ def loadMidiDrums(path):
     for event in drumsEvents:
         event.numberNote = drum_conversion[event.data[0]] if event.data[0] in drum_conversion else event.data[0]
    
-        if event.tick not in timedEvents:
-            timedEvents[event.tick] = []
+        if absoluteTimes[event] not in timedEvents:
+            timedEvents[absoluteTimes[event]] = []
         
         if event.numberNote in noteToVector : 
-            timedEvents[event.tick].append(noteToVector[event.numberNote])
+            timedEvents[absoluteTimes[event]].append(noteToVector[event.numberNote])
     
-    timedEvents = {timeStamp : [1 if idx in notes else 0 for idx in xrange(9)] for timeStamp, notes in timedEvents.iteritems()}
+    timedEvents = {time : [1 if idx in notes else 0 for idx in xrange(9)] for time, notes in timedEvents.iteritems()}
     return timedEvents
     #get biggest frequency containing every notes
     # frequency = 0;

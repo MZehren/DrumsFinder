@@ -13,11 +13,12 @@ def loadFolder(path):
 midi = midiProxy.loadMidiDrums("../../Data/samples/tabs/LegionsOfTheSerpent.mid")
 wave = audio.load("../../Data/samples/tabs/LegionsOfTheSerpent.wav")
 samplingRate, spectrogram = audio.performFFTs(wave, frameDuration=0.1, windowStep=0.05)
+sequenceLength = 5
+#audio.visualizeSpectrogram(spectrogram)
 
-print samplingRate, spectrogram.shape
-audio.visualizeArray(spectrogram)
-# numFeatures = len(songs[0][0]) if songs else 9
-# model = getLSTMModel(maxLength, numFeatures)
+
+model = kerasProxy.getLSTMModel(inputShape=(sequenceLength,len(spectrogram[0])), outputLength=len(midi.itervalues().next()))
+
 # testModel(model, maxLength)
 # 
 # if os.path.isfile('LSTMTest.h5'): 
