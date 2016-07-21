@@ -1,6 +1,6 @@
 from modules import midiProxy
 # from modules import kerasProxy
-# from modules import audio
+from modules import audio
 
 def loadFolder(path):
 	for root, dirs, files in os.walk("./samples/mididatabase/files.mididatabase.com/rock/metallica"):
