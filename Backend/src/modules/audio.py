@@ -3,7 +3,7 @@ from scipy.io import wavfile
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import midiProxy 
 
 
 
@@ -32,18 +32,28 @@ def getFrequencies(duration, samplingRate):
     fftFreq = np.fft.fftfreq(int(sampleNumber), duration)
     return np.linspace(0.0, (samplingRate / 2), sampleNumber / 2 + 1) #todo: why is it +1 ?
 
-def visualizeSpectrogram(array, samplingRate = 44100, frameDuration=0.1):
+def visualizeSpectrogram(array, midi=None, samplingRate=44100, frameDuration=0.1):
     array = array.transpose()
     #todo: specify zmin, zmax (for colors)
-    extent = [0, (frameDuration / 2) * len(array[0]),float(samplingRate) / float(2000), 0] # [xmin, xmax, ymin, ymax]
+    extent = [0, (frameDuration / 2) * len(array[0]),float(samplingRate) / float(2), 0] # [xmin, xmax, ymin, ymax]
     fig = plt.figure()
     ax = fig.add_subplot(111)
     cax = ax.imshow(array, cmap="nipy_spectral", extent=extent, aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
     fig.colorbar(cax)
 
-    plt.ylabel("frequencies (kHz)")
+    if midi:
+        for noteIdx in range(len(midi[0][1])): #each note from the array [1, 0, 0, 0, 1]
+            note = midiProxy.vectorToNote[noteIdx]
+            thisNoteEventsTime = [event[0] / 1000000 for event in midi if event[1][noteIdx]]
+            thisNoteEventsHeight = [midiProxy.noteToFrequency[note] for i in range(len(thisNoteEventsTime))]
+            plt.plot(thisNoteEventsTime, thisNoteEventsHeight, midiProxy.noteToPlotIcon[note])
+
+
+    plt.ylabel("frequencies (Hz)")
     plt.xlabel("time (s)")
     plt.show()
+
+
 
 
 

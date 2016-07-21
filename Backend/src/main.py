@@ -1,3 +1,5 @@
+#! ../ENV/bin/python
+
 from modules import midiProxy
 # from modules import kerasProxy
 from modules import audio
@@ -11,10 +13,10 @@ def loadFolder(path):
 
 
 midi = midiProxy.loadMidiDrums("../../Data/samples/tabs/LegionsOfTheSerpent.mid")
-# wave = audio.load("../../Data/samples/tabs/LegionsOfTheSerpent.wav")
+wave = audio.load("../../Data/samples/tabs/LegionsOfTheSerpent.wav")
 samplingRate, spectrogram = audio.performFFTs(wave, frameDuration=0.1, windowStep=0.05)
 sequenceLength = 5
-#audio.visualizeSpectrogram(spectrogram)
+audio.visualizeSpectrogram(spectrogram, midi=midi)
 
 
 # model = kerasProxy.getLSTMModel(inputShape=(sequenceLength,len(spectrogram[0])), outputLength=len(midi.itervalues().next()))

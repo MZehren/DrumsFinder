@@ -24,6 +24,39 @@ noteToVector = {
     49 : 7,
     51 : 8
 }
+vectorToNote = {
+    0 : 36, 
+    1 : 40,
+    2 : 41,
+    3 : 45,
+    4 : 48,
+    5 : 42,
+    6 : 46,
+    7 : 49,
+    8 : 51
+}
+noteToFrequency = {
+    36 : 100,
+    40 : 2000,
+    41 : 1000,
+    45 : 2000,
+    48 : 2000,
+    42 : 3000,
+    46 : 3000,
+    49 : 4000,
+    51 : 6000
+}
+noteToPlotIcon = {
+    36 : "bo",
+    40 : "bo",
+    41 : "ro",
+    45 : "ro",
+    48 : "ro",
+    42 : "gx",
+    46 : "go",
+    49 : "gs",
+    51 : "g^"
+}
 
 #returns an array of vectors wich are the drum played for each window in the music
 def loadMidiDrums(path):  
@@ -107,4 +140,3 @@ def loadMidiDrums(path):
     # return [timedEvents[time] if time in timedEvents else [0 for i in range(9)] for time in range(0, max(timedEvents.keys()), frequency)]
     
 
-    
