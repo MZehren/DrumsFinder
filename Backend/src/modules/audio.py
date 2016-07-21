@@ -32,19 +32,21 @@ def getFrequencies(duration, samplingRate):
     fftFreq = np.fft.fftfreq(int(sampleNumber), duration)
     return np.linspace(0.0, (samplingRate / 2), sampleNumber / 2 + 1) #todo: why is it +1 ?
 
-def visualizeSpectrogram(array, midi=None, samplingRate=44100, frameDuration=0.1):
-    array = array.transpose()
-    #todo: specify zmin, zmax (for colors)
-    extent = [0, (frameDuration / 2) * len(array[0]),float(samplingRate) / float(2), 0] # [xmin, xmax, ymin, ymax]
+def visualizeSpectrogram(spectrogram=None, midi=None, samplingRate=44100):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    cax = ax.imshow(array, cmap="nipy_spectral", extent=extent, aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
-    fig.colorbar(cax)
+
+    if spectrogram:
+        #todo: specify zmin, zmax (for colors)
+        extent = [0, spectrogram[-1]["stopTime"], 0, float(samplingRate) / float(2)] # [xmin, xmax, ymin, ymax], xmax is the starting time of the last fft done
+        points = np.fliplr(np.array([fft["frequencies"] for fft in spectrogram])).transpose()
+        cax = ax.imshow(points, cmap="nipy_spectral", extent=extent, aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
+        fig.colorbar(cax)
 
     if midi:
-        for noteIdx in range(len(midi[0][1])): #each note from the array [1, 0, 0, 0, 1]
+        for noteIdx in range(len(midi[0]["notes"])): #each note from the array [1, 0, 0, 0, 1]
             note = midiProxy.vectorToNote[noteIdx]
-            thisNoteEventsTime = [event[0] / 1000000 for event in midi if event[1][noteIdx]]
+            thisNoteEventsTime = [event["startTime"] for event in midi if event["notes"][noteIdx]]
             thisNoteEventsHeight = [midiProxy.noteToFrequency[note] for i in range(len(thisNoteEventsTime))]
             plt.plot(thisNoteEventsTime, thisNoteEventsHeight, midiProxy.noteToPlotIcon[note])
 
@@ -74,8 +76,10 @@ def performFFTs(waveForm, frameDuration=0.1, windowStep=0.05):
     stepFrequency = windowStep * samplingRate
     while cursor + frameFrequency < len(channel0) : #for each frame
         frame = channel0[int(cursor): int(cursor + frameFrequency)]
+        startTime = float(cursor) / samplingRate
         cursor += stepFrequency
-      
+        stopTime = float(cursor) / samplingRate
+        
         amplitude = np.fft.fft(frame)
         length = len(frame)
         
@@ -104,11 +108,11 @@ def performFFTs(waveForm, frameDuration=0.1, windowStep=0.05):
 #         print fftFreq
 #         print amplitude
         #result.append(np.array(20*log10(dbfsAmplitude)))
-        result.append(np.array(20*pl.log10(amplitude / (2*32768)))) #todo: is it ok to do not use a logarithmic scale ?
+        result.append({"statTime": startTime, "stopTime":stopTime, "frequencies": np.array(20*pl.log10(amplitude / (2*32768)))}) #todo: is it ok to do not use a logarithmic scale ?
         #result.append(np.array(amplitude))
 #         result.append({'frequencies': frequencies, 'power' : np.array(10*log10(amplitude))})
         
-    return samplingRate, np.array(result)
+    return result, samplingRate
 
 
 # test = performFFTs(load("440_sine.wav"), frameDuration=0.1, windowStep = 0.002)

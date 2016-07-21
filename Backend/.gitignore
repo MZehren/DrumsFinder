@@ -1,2 +1,3 @@
 ENV/*
 DrumsFinder.egg-info/*
+.idea/*
