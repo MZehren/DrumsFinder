@@ -1,6 +1,6 @@
 from modules import midiProxy
-from modules import kerasProxy
-from modules import audio
+# from modules import kerasProxy
+# from modules import audio
 
 def loadFolder(path):
 	for root, dirs, files in os.walk("./samples/mididatabase/files.mididatabase.com/rock/metallica"):
@@ -11,13 +11,13 @@ def loadFolder(path):
 
 
 midi = midiProxy.loadMidiDrums("../../Data/samples/tabs/LegionsOfTheSerpent.mid")
-wave = audio.load("../../Data/samples/tabs/LegionsOfTheSerpent.wav")
+# wave = audio.load("../../Data/samples/tabs/LegionsOfTheSerpent.wav")
 samplingRate, spectrogram = audio.performFFTs(wave, frameDuration=0.1, windowStep=0.05)
 sequenceLength = 5
 #audio.visualizeSpectrogram(spectrogram)
 
 
-model = kerasProxy.getLSTMModel(inputShape=(sequenceLength,len(spectrogram[0])), outputLength=len(midi.itervalues().next()))
+# model = kerasProxy.getLSTMModel(inputShape=(sequenceLength,len(spectrogram[0])), outputLength=len(midi.itervalues().next()))
 
 # testModel(model, maxLength)
 # 

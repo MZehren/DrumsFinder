@@ -1,6 +1,0 @@
-setup.py
-DrumsFinder.egg-info/PKG-INFO
-DrumsFinder.egg-info/SOURCES.txt
-DrumsFinder.egg-info/dependency_links.txt
-DrumsFinder.egg-info/requires.txt
-DrumsFinder.egg-info/top_level.txt
