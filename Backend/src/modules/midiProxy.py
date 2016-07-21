@@ -57,6 +57,7 @@ noteToPlotIcon = {
     49 : "gs",
     51 : "g^"
 }
+emptyEvent = [0,0,0,0,0,0,0,0,0]
 
 def getTickToSeconds(deltaTicks, partPerBeats, microsecondsPerBeat):
     return float(deltaTicks) / partPerBeats * microsecondsPerBeat / 1000000 #number of tick since last event / part per beats * microseconds per beats

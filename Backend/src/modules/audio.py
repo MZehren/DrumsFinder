@@ -1,9 +1,10 @@
 import pylab as pl
 from scipy.io import wavfile
-
 import matplotlib.pyplot as plt
 import numpy as np
 import midiProxy 
+
+import math
 
 
 
@@ -72,8 +73,8 @@ def performFFTs(waveForm, frameDuration=0.1, windowStep=0.05):
         
     result = []
     cursor = 0
-    frameFrequency = frameDuration * samplingRate
-    stepFrequency = windowStep * samplingRate
+    frameFrequency = math.ceil(frameDuration * samplingRate) #ceilling to prevent a non integer number of samples
+    stepFrequency = math.ceil(windowStep * samplingRate)
     while cursor + frameFrequency < len(channel0) : #for each frame
         frame = channel0[int(cursor): int(cursor + frameFrequency)]
         startTime = float(cursor) / samplingRate
@@ -108,7 +109,7 @@ def performFFTs(waveForm, frameDuration=0.1, windowStep=0.05):
 #         print fftFreq
 #         print amplitude
         #result.append(np.array(20*log10(dbfsAmplitude)))
-        result.append({"statTime": startTime, "stopTime":stopTime, "frequencies": np.array(20*pl.log10(amplitude / (2*32768)))}) #todo: is it ok to do not use a logarithmic scale ?
+        result.append({"startTime": startTime, "stopTime":stopTime, "frequencies": np.array(20*pl.log10(amplitude / (2*32768)))}) #todo: is it ok to do not use a logarithmic scale ?
         #result.append(np.array(amplitude))
 #         result.append({'frequencies': frequencies, 'power' : np.array(10*log10(amplitude))})
         
