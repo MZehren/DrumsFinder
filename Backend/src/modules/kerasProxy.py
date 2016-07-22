@@ -18,7 +18,7 @@ def getLSTMModel(inputShape=(1,1), outputLength=1):
     model.add(Dropout(0.2))
     model.add(Dense(outputLength))
     model.add(Activation('sigmoid'))
-    model.compile(loss='binary_crossentropy', optimizer='adam')
+    model.compile(loss='categorical_crossentropy', optimizer='adam')
     
     return model
 

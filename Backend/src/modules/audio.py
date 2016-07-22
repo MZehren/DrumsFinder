@@ -102,19 +102,10 @@ def performFFTs(waveForm, frameDuration=0.1, windowStep=0.05):
         else:
             amplitude[1:len(amplitude) -1] = amplitude[1:len(amplitude) - 1] * 2 # we've got even number of points fft
         
-        frequencies = pl.arange(0, nUniquePts, 1.0) * (samplingRate / length); #Frequency (Hz)
-        fftFreq = np.fft.fftfreq(len(amplitude), samplingRate/length)
-        
-#         print frequencies
-#         print fftFreq
-#         print amplitude
-        #result.append(np.array(20*log10(dbfsAmplitude)))
+        #frequencies = pl.arange(0, nUniquePts, 1.0) * (samplingRate / length); #Frequency (Hz)
+        #fftFreq = np.fft.fftfreq(len(amplitude), samplingRate/length)
+
         result.append({"startTime": startTime, "stopTime":stopTime, "frequencies": np.array(20*pl.log10(amplitude / (2*32768)))}) #todo: is it ok to do not use a logarithmic scale ?
-        #result.append(np.array(amplitude))
-#         result.append({'frequencies': frequencies, 'power' : np.array(10*log10(amplitude))})
+
         
     return result, samplingRate
-
-
-# test = performFFTs(load("440_sine.wav"), frameDuration=0.1, windowStep = 0.002)
-# visualizeArray(np.transpose(test), frameDuration = 0.1)
