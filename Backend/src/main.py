@@ -41,11 +41,11 @@ def createTrainData(spectrogram, midi, sequenceLength):
             y_candidates.append(midiProxy.emptyEvent)
         Y_train.append(y_candidates[0])
 
-    return X_train, Y_train
+    return np.array(X_train), np.array(Y_train)
 
 
 
-def train(weightsPath, wavPath, midiPath, frameDurationSample = 2048, windowStepSample = 1024, sequenceLength = 10): #sequences of 2048/44100
+def train(weightsPath, wavPath, midiPath, frameDurationSample = 2048, windowStepSample = 1024, sequenceLength = 50): #one frame each 1024/44100 = 0.023s
     midi = midiProxy.loadMidiDrums(midiPath)
     wave = audio.load(wavPath)
     spectrogram, samplingRate = audio.performFFTs(wave, frameDurationSample=frameDurationSample, windowStepSample=windowStepSample)
@@ -62,14 +62,18 @@ def train(weightsPath, wavPath, midiPath, frameDurationSample = 2048, windowStep
         model.load_weights(weightsPath)
 
     X_train, Y_train = createTrainData(spectrogram, midi, sequenceLength)
+    X_train = X_train.reshape(X_train.shape[0], 1, X_train.shape[1], X_train.shape[2])
 
     model.fit(X_train, Y_train, nb_epoch=1, batch_size=256) #epoch = number of time all the test data are used, batch_size= number of training examples in one forward/backward pass (thei higher, the more memory is used)
-    #audio.visualizeSpectrogram(spectrogram, midi=test(X_train, model, float(windowStepSample) / samplingRate),  samplingRate=samplingRate)
+    audio.visualizeSpectrogram(spectrogram, midi=test(X_train, model, float(windowStepSample) / samplingRate),  samplingRate=samplingRate)
 
     model.save_weights(weightsPath,  overwrite=True)
 
 def test(X_test, model, windowStep):
     proba = model.predict_proba(X_test[:500], batch_size=1)
+    print proba
+    for pro in proba:
+        print np.sum(pro)
 
     events = [{"startTime" : i * windowStep, "notes" :  [1 if note > 0.5 else 0 for note in event]} for i, event in enumerate(proba)]
     return events

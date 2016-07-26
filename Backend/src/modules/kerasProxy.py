@@ -27,11 +27,11 @@ def getConvModel(inputShape=(1,1), outputLength=1):
     # Sequential wrapper model
     model = Sequential()
 
-    # first convolutional layer
-    model.add(Convolution2D(32,3,50, activation='relu', input_shape=(1, inputShape[0], inputShape[1])))
-
-    # second convolutional layer
-    model.add(Convolution2D(32, 2, 2, activation='relu'))
+    # convolutional layers
+    model.add(Convolution2D(64, inputShape[0]/10 , inputShape[1]/10, border_mode='valid', input_shape=(1, inputShape[0], inputShape[1])))
+    model.add(Activation('relu'))
+    model.add(Convolution2D(32, inputShape[0]/10, inputShape[1]/10))
+    model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2,2)))
 
 
@@ -39,20 +39,16 @@ def getConvModel(inputShape=(1,1), outputLength=1):
     # fully connected layers
     model.add(Flatten())
 
-    # first fully connected layer
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.25))
-
-    # second fully connected layer
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.25))
-
-    # last fully connected layer which output classes
-    model.add(Dense(outputLength, activation='softmax'))
+    # fully connected layers
+    model.add(Dense(128))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(outputLength))
+    model.add(Activation('sigmoid')) #using sigmoid as softmax doesn't work for multilabel
 
     # setting sgd optimizer parameters
-    sgd = SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(loss='categorical_crossentropy', optimizer=sgd)
+    #sgd = SGD(lr=0.05, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
 
     return model
 
