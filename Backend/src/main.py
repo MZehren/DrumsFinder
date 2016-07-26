@@ -43,35 +43,28 @@ def createTrainData(spectrogram, midi, sequenceLength):
 
     return X_train, Y_train
 
-#metaData
 
 
-
-def train(weightsPath, wavPath, midiPath, frameDuration = 0.075, windowStep = 0.075, sequenceLength = 10): #sequences of 10*0.075 = 0.75 s
+def train(weightsPath, wavPath, midiPath, frameDurationSample = 2048, windowStepSample = 1024, sequenceLength = 10): #sequences of 2048/44100
     midi = midiProxy.loadMidiDrums(midiPath)
     wave = audio.load(wavPath)
-    spectrogram, samplingRate = audio.performFFTs(wave, frameDuration=frameDuration, windowStep=windowStep)
-    #normalize
-    max = np.amax([fft["frequencies"] for fft in spectrogram])
-    min = np.amin([fft["frequencies"] for fft in spectrogram])
-    for fft in spectrogram:
-        fft["frequencies"] = [(value - min) / (max - min) for value in fft["frequencies"]]
+    spectrogram, samplingRate = audio.performFFTs(wave, frameDurationSample=frameDurationSample, windowStepSample=windowStepSample)
+
 
     #check correctness
-    # audio.visualizeSpectrogram(spectrogram, midi=midi,  samplingRate=samplingRate)
+    #audio.visualizeSpectrogram(spectrogram, midi, samplingRate=samplingRate, frameDuration=frameDurationSample * samplingRate)
 
-    #loadModem
-    model = kerasProxy.getLSTMModel(inputShape=(sequenceLength,len(spectrogram[0]["frequencies"])), outputLength=len(midiProxy.emptyEvent))
+    #loadModembinary_crossentropy
+    #model = kerasProxy.getLSTMModel(inputShape=(sequenceLength,len(spectrogram[0]["frequencies"])), outputLength=len(midiProxy.emptyEvent))
+    model = kerasProxy.getConvModel(inputShape=(sequenceLength,len(spectrogram[0]["frequencies"])), outputLength=len(midiProxy.emptyEvent))
     if os.path.isfile(weightsPath):
         print "Weights loaded from : " + weightsPath
         model.load_weights(weightsPath)
 
     X_train, Y_train = createTrainData(spectrogram, midi, sequenceLength)
 
-    audio.visualizeSpectrogram(spectrogram, midi=test(X_train, model, windowStep),  samplingRate=samplingRate)
-    #model.fit(X_train, Y_train, nb_epoch=1, batch_size=256) #epoch = number of time all the test data are used, batch_size= number of training examples in one forward/backward pass (thei higher, the more memory is used)
-
-    audio.visualizeSpectrogram(spectrogram, midi=test(X_train, model, windowStep),  samplingRate=samplingRate)
+    model.fit(X_train, Y_train, nb_epoch=1, batch_size=256) #epoch = number of time all the test data are used, batch_size= number of training examples in one forward/backward pass (thei higher, the more memory is used)
+    #audio.visualizeSpectrogram(spectrogram, midi=test(X_train, model, float(windowStepSample) / samplingRate),  samplingRate=samplingRate)
 
     model.save_weights(weightsPath,  overwrite=True)
 
@@ -85,4 +78,9 @@ def test(X_test, model, windowStep):
 if len(sys.argv) == 1:
     #print
     #print " usage : " + sys.argv[0] +" weightsPath wavPath midiPath"
-    train("LSTMWeights.h5", "../../Data/samples/tabs/LegionsOfTheSerpent.wav", "../../Data/samples/tabs/LegionsOfTheSerpent.mid")
+    for root, dirs, files in os.walk("../../Data/handmade"):
+        for idx, file in enumerate(files):
+            if file.endswith(".mid"):
+                name = os.path.splitext(os.path.join(root, file))[0]
+                print name
+                train("ConvolutionWeights.h5", name + ".wav", name + ".mid")
