@@ -24,6 +24,43 @@ noteToVector = {
     49 : 7,
     51 : 8
 }
+vectorToNote = {
+    0 : 36, 
+    1 : 40,
+    2 : 41,
+    3 : 45,
+    4 : 48,
+    5 : 42,
+    6 : 46,
+    7 : 49,
+    8 : 51
+}
+noteToFrequency = {
+    36 : 100,
+    40 : 2000,
+    41 : 1000,
+    45 : 2000,
+    48 : 2000,
+    42 : 3000,
+    46 : 3000,
+    49 : 4000,
+    51 : 6000
+}
+noteToPlotIcon = {
+    36 : "bo",
+    40 : "bo",
+    41 : "ro",
+    45 : "ro",
+    48 : "ro",
+    42 : "gx",
+    46 : "go",
+    49 : "gs",
+    51 : "g^"
+}
+emptyEvent = [0,0,0,0,0,0,0,0,0]
+
+def getTickToSeconds(deltaTicks, partPerBeats, microsecondsPerBeat):
+    return float(deltaTicks) / partPerBeats * microsecondsPerBeat / 1000000 #number of tick since last event / part per beats * microseconds per beats
 
 #returns an array of vectors wich are the drum played for each window in the music
 def loadMidiDrums(path):  
@@ -38,12 +75,12 @@ def loadMidiDrums(path):
         tickCursor += tempoEvent.tick
         if tempoEvent.name == 'Set Tempo':
             currentMpqn = tempoEvent.mpqn
-        tempoEvents.append((tickCursor, currentMpqn))
+            tempoEvents.append((tickCursor, currentMpqn))
 
     for track in pattern[1:]:
         tickCursor = 0
         timeCursor = 0
-        tempoIdx = 0
+        tempoIdx = -1
         currentMpqn = 500000 # defaut microseconds/beats, wich is 120 bpm
 
         for event in track:
@@ -51,15 +88,19 @@ def loadMidiDrums(path):
 
             #if there was a previous tempo change
             if len(tempoEvents) > tempoIdx + 1 and tempoEvents[tempoIdx + 1][0] < tickCursor:
-                currentMpqn = tempoEvents[tempoIdx + 1][1]
                 tempoIdx += 1
 
-                #TODO: we don't compute if all the tick here have the same value, or if a tempo event occured between them
+                #we don't compute if all the tick here have the same value, or if a tempo event occured between them
                 if tickCursor - event.tick != tempoEvents[tempoIdx][0]:
                     print "ERROR: tempo event occured between two drums event and not during one."
+                    oldSpeedTicks = tempoEvents[tempoIdx][0] - (tickCursor - event.tick)
+                    timeCursor += getTickToSeconds(oldSpeedTicks, pattern.resolution, currentMpqn)
+                    event.tick = event.tick - oldSpeedTicks # reduce the delta time since the last event as it should be the tempo change
+
+                currentMpqn = tempoEvents[tempoIdx][1]
 
             #we compute the time is miliseconds since last event
-            timeCursor += float(event.tick) / pattern.resolution * currentMpqn #number of tick since last event / part per beats * microseconds per beats
+            timeCursor += getTickToSeconds(event.tick, pattern.resolution, currentMpqn) 
             event.tick = timeCursor #todo: assign a new var
         
     tracks = [[event for event in track if isinstance(event, midi.NoteOnEvent) and event.channel == 9] for track in pattern] 
@@ -93,7 +134,7 @@ def loadMidiDrums(path):
         if event.numberNote in noteToVector : 
             timedEvents[event.tick].append(noteToVector[event.numberNote])
     
-    timedEvents = [(time, [1 if idx in notes else 0 for idx in xrange(9)]) for time, notes in timedEvents.iteritems()]
+    timedEvents = [{"startTime":time, "notes":[1 if idx in notes else 0 for idx in xrange(9)]} for time, notes in timedEvents.iteritems()]
     return timedEvents
     #get biggest frequency containing every notes
     # frequency = 0;
@@ -107,4 +148,3 @@ def loadMidiDrums(path):
     # return [timedEvents[time] if time in timedEvents else [0 for i in range(9)] for time in range(0, max(timedEvents.keys()), frequency)]
     
 
-    
