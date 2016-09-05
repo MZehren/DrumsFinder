@@ -15,42 +15,47 @@
         .when('/testMidi', {
             controller : function ($scope, midiProvider) {
 
-                midiProvider.loadMidiFile('assets/Partitions/test.mid', function(midi){
+                midiProvider.loadMidiFile('assets/Partitions/test.mid', function(){
                     $scope.$apply(function(){
-                        $scope.midi = midi;
-                        console.log($scope.midi);
 
-                        $scope.notes = midiProvider.getMidiNotesEvents($scope.midi);
+                        $scope.notes = midiProvider.getMidiNotesEvents();
                         console.log($scope.notes);  
 
-                        $scope.sheetMusic = midiProvider.getMidiSheetMusic($scope.midi);
+                        $scope.sheetMusic = midiProvider.getMidiSheetMusic();
                         console.log($scope.sheetMusic);  
-                        
-                        console.log($scope.midi.getFileInstruments());
                         
                         $scope.playNote = function(note){
                             midiProvider.playMidiNote(note);
                         }
                         
-                        $scope.playPause = function(){
-                            if($scope.midi.playing)
-                                $scope.midi.stop(function(success){});
-                            else
-                                $scope.midi.start(function(success){});
-                        }
-                        
-                        $scope.midi.addListener(function(note){
-                            $scope.cursor=note;
-                        })
+                        $scope.midi = midiProvider;
                         
                     });
 
                 });
 
             },
-            template: '<button ng-click="playPause()">{{midi.playing ? "pause" : "play"}}</button>' + 
+            template: '<button ng-click="midi.playPause()">{{midi.playing ? "pause" : "play"}}</button>' + 
                       '<midi-partition-directive notes="sheetMusic" play-note="playNote" midi="midi" style="width: 100%; height:100%"></midi-partition-directive>' +
-                      '<midi-piano-roll-directive notes="notes" play-note="play" style="width: 100%; height:100%"></midi-piano-roll-directive>',
+                      '<midi-piano-roll-directive notes="notes" play-note="playNote" style="width: 100%; height:100%"></midi-piano-roll-directive>',
+        })
+        .when('/generateMidi', {
+            controller : function ($scope, musicGeneratorProvider) {
+
+                $scope.midi = musicGeneratorProvider.generateRandomMidi(0,0);
+
+                $scope.notes =  $scope.midi.getMidiNotesEvents();
+                console.log($scope.notes);  
+
+                $scope.sheetMusic =  $scope.midi.getMidiSheetMusic();
+                console.log($scope.sheetMusic);  
+
+                    
+            },
+            template: '<button ng-click="midi.playPause()">{{midi.playing ? "pause" : "play"}}</button>' + 
+                      '{{sheetMusic}}' +
+                      '<midi-partition-directive notes="sheetMusic" style="width: 100%; height:100%"></midi-partition-directive>' +
+                      '<midi-piano-roll-directive notes="notes" play-note="playNote" style="width: 100%; height:100%"></midi-piano-roll-directive>',
         })
         .otherwise({
             redirectTo: '/'

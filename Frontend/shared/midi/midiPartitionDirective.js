@@ -17,7 +17,7 @@ angular.module('midi').directive('midiPartitionDirective', function() {
         var staveWidth = 500;
 
         function update(value, oldValue) {
-            if (value == oldValue) return;
+            //if (value == oldValue) return;
 
             canvas.width = staveWidth * value.length;
 
@@ -64,18 +64,18 @@ angular.module('midi').directive('midiPartitionDirective', function() {
 
         }
 
-        scope.$watch("notes", update);
+        scope.$watch("notes", update, true);
         
         //todo: remove listener
-        scope.$watch("midi", function(midi){
-            if(!midi) return;
+        // scope.$watch("midi", function(midi){
+        //     if(!midi) return;
             
-            midi.addListener(function(note){
-                var tempo = midi.data.filter(function(d){return d[0].event.subtype == "setTempo"});
-                var millisecondsPerBeat = tempo[0][0].event.microsecondsPerBeat / 1000;
-                var cursorLeft =  (note.now / (millisecondsPerBeat * 4)) * staveWidth;
-            })
-        });
+        //     midi.addListener(function(note){
+        //         var tempo = midi.data.filter(function(d){return d[0].event.subtype == "setTempo"});
+        //         var millisecondsPerBeat = tempo[0][0].event.microsecondsPerBeat / 1000;
+        //         var cursorLeft =  (note.now / (millisecondsPerBeat * 4)) * staveWidth;
+        //     })
+        // });
 
     }
     return {

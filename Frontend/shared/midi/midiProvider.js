@@ -3,6 +3,8 @@ angular.module('midi')
 
     //----------------- UTILS FUNCTIONS
     var myThis = this;
+    this.midiPlayer = MIDI.Player;
+
     // in 4/4 time signature
     this.noteDuration={
         "w"     : 4,
@@ -26,14 +28,11 @@ angular.module('midi')
         var index = i,
             key = notesNames[index % 12],
             octave = ((index / 12) | 0) ; //octave = ((index / 12) | 0) - 1; // MIDI scale starts at octave = -1
-
-
         key = key + '/';
         
         key += octave;
         // noteMap[key] = i;
         this.noteNumberMap[i] = key;
-
     }
 
     // from 1.002 to "q"
@@ -86,9 +85,9 @@ angular.module('midi')
 
     this.loadMidiFile = function(url, onSuccess){
 
-        MIDI.Player.loadFile(url,  
+        this.midiPlayer.loadFile(url,  
             function(midi){
-                onSuccess(MIDI.Player);
+                onSuccess();
             },
             function(progress){
             },
@@ -113,9 +112,9 @@ angular.module('midi')
 
     //todo: handle multiple voice event (synchronous notes)
     //return array of the form [{noteNumber : [-1 / 127], startTime : absolute, stopTime : absolute, deltaTime : relative to previous note}]
-    this.getMidiNotesEvents = function (midiPlayer, addSilence){
+    this.getMidiNotesEvents = function (addSilence){
 
-        var eventsChunk = jQuery.extend(true, [],midiPlayer.data);
+        var eventsChunk = jQuery.extend(true, [],this.midiPlayer.data);
         //creating starting and ending time for each events.
         var events = [];
         var eventsLookup = {};
@@ -181,11 +180,11 @@ angular.module('midi')
 
     //return array representing the sheet music of the shape bar/notes
     //[[{keys:["a/4"], duration "w"}], ]
-    this.getMidiSheetMusic = function(midiPlayer){ //has to return with multiple voice, and botes at the good position
-        var BPM = midiPlayer.BPM
-        var notes = this.getMidiNotesEvents(midiPlayer, true)
-        var tempo = midiPlayer.data.filter(function(d){return d[0].event.subtype == "setTempo"});
-        var timeSignature = midiPlayer.data.filter(function(d){return d[0].event.subtype == "timeSignature"})
+    this.getMidiSheetMusic = function(){ //has to return with multiple voice, and botes at the good position
+        var BPM = this.midiPlayer.BPM
+        var notes = this.getMidiNotesEvents(this.midiPlayer, true)
+        var tempo = this.midiPlayer.data.filter(function(d){return d[0].event.subtype == "setTempo"});
+        var timeSignature = this.midiPlayer.data.filter(function(d){return d[0].event.subtype == "timeSignature"})
 
 
         var sheet = [];
@@ -226,12 +225,107 @@ angular.module('midi')
     //     var timeSignature = midi.data.filter(function(d){return d[0].event.subtype == "timeSignature"})
     //     
     // }
-    
+   this.playing = this.midiPlayer.playing;
+   this.playPause = function(){
+        if(this.midiPlayer.playing){
+            this.midiPlayer.stop(function(success){}); //launch an update here !
+        }
+        else{
+            this.midiPlayer.start(function(success){
+                console.log("success");
+            });
+        }
+    }
+
     this.playMidiNote = function(note){
 
         // play the note
         MIDI.noteOn(0, note.noteNumber, note.velocity, 0);
         MIDI.noteOff(0, note.noteNumber, (note.stopTime - note.deltaTime) /1000);
+    }
+
+
+    this.addTimeSignatureEvent = function(numerator, denominator){
+        this.midiPlayer.data.push(
+            [
+                {
+                    event:{
+                        deltaTime:0,
+                        denominator:denominator,
+                        metronome:7,
+                        numerator:numerator,
+                        subtype:"timeSignature",
+                        thirtyseconds:161,
+                        type:"meta"
+                    },
+                    ticksToEvent : 0,
+                    track:0,
+                },
+                0
+            ]);
+    }
+
+    this.addTempoEvent = function(tempo){
+        this.midiPlayer.data.push(
+            [
+                {
+                    event:{
+                        deltaTime : 0,
+                        microsecondsPerBeat : 60000000/tempo,
+                        subtype:"setTempo",
+                        type:"meta"
+                    },
+                    ticksToEvent : 0,
+                    track:0,
+                },
+                0
+            ]);
+    }
+
+
+    this.addNote = function(notes, duration){
+        if( !this.midiPlayer.data ){
+             this.midiPlayer.data = [];
+             this.addTempoEvent(120);
+             this.addTimeSignatureEvent(4,4);
+        }
+        for(var i = 0; i < notes.length; i++){
+            this.midiPlayer.data.push(
+                [  
+                    {  
+                        event:{  
+                            channel:0,
+                            deltaTime:0,
+                            noteNumber:notes[i],
+                            subtype:"noteOn",
+                            type:"channel",
+                            velocity:95
+                        },
+                        ticksToEvent:0,
+                        track:1
+                    },
+                    0
+                ])
+        }
+
+        for(var i = 0; i < notes.length; i++){
+            this.midiPlayer.data.push(
+                [  
+                    {  
+                        event:{  
+                            channel:0,
+                            deltaTime: i == 0 ? duration : 0,
+                            noteNumber:notes[i],
+                            subtype:"noteOff",
+                            type:"channel",
+                            velocity:95
+                        },
+                        ticksToEvent: i == 0 ? duration : 0,
+                        track:1
+                    },
+                    0
+                ])
+        }
     }
 
 
