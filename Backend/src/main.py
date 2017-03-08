@@ -14,7 +14,7 @@ def loadFolder(path):
     songs = []
     for root, dirs, files in os.walk(path):
         for idx, file in enumerate(files):
-            if file.endswith(".mid"):
+            if file.endswith(".wav"):
                 print(os.path.join(root, file))
                 songs.append(midiProxy.loadMidiDrums(os.path.join(root, file)))
 

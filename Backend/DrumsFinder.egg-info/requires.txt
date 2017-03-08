@@ -4,3 +4,4 @@ matplotlib
 keras
 python-midi
 six
+h5py

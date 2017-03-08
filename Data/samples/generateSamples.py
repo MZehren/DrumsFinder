@@ -20,7 +20,7 @@ rate, waveFile = fft.load(wavPath)
 
 #lowest frequency = 10Hz = 0.1s per wave
 #time between 16th notes : 200bpm = 300 b/ms = 0.3 b/s = 0.075 16th/s
-step = 0.075
+step = 0.15
 # step = 1
 
 samples = int(step * rate)
