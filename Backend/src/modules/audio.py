@@ -31,6 +31,7 @@ def loadFolder(path, xShape=(1024,32), trainingPercentage=0.9, frameDurationSamp
                 wave = load(path)
                 spectrogram, samplingRate = performFFTs(wave, frameDurationSample=frameDurationSample, windowStepSample=windowStepSample)
                 xn = np.fliplr(np.array([fft["frequencies"] for i,fft in enumerate(spectrogram) if i<32])).transpose()
+
                 if xn.shape[1]>=xShape[1]:
                     if root not in classes:
                         classes[root]=len(classes)
@@ -41,8 +42,9 @@ def loadFolder(path, xShape=(1024,32), trainingPercentage=0.9, frameDurationSamp
                     songs[y].append(xn)
                 
                 print path
-                #audio.visualizeSpectrogram(wave=wave, spectrogram=spectrogram, samplingRate=samplingRate, frameDuration=frameDurationSample * samplingRate, name=path)
-                #if len(wave[1])/float(wave[0]) > 0.3: #0.3s is enough to classify a sample ?
+#                 if "snares" in path :
+#                     visualizeSpectrogram(wave=wave, spectrogram=spectrogram, samplingRate=samplingRate, frameDuration=frameDurationSample * samplingRate, name=path)
+
     
     maxSamples = min([len(samples) for label, samples in songs.iteritems()])
     maxLabel = max([label for label, samples in songs.iteritems()])
