@@ -26,6 +26,9 @@ def loadFolder(path, xShape=(1024,32), trainingPercentage=0.9, frameDurationSamp
     classes = {}
     for root, dirs, files in os.walk(path):
         for idx, file in enumerate(files):
+#             if idx > 1:
+#                 break
+            
             if file.endswith(".wav"):
                 path = (os.path.join(root, file))
                 wave = load(path)
