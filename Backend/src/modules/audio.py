@@ -3,7 +3,7 @@ import os
 import math
 
 import tensorFlowUtils
-# import midiProxy 
+import midiProxy 
 
 import pylab as pl
 from scipy.io import wavfile
@@ -11,6 +11,7 @@ from scipy.fftpack import fft
 import matplotlib.pyplot as plt
 import numpy as np
 from random import shuffle
+from matplotlib.cbook import Null
 
 
 #load a music file
@@ -18,48 +19,41 @@ from random import shuffle
 def load(path):
     return wavfile.read(path)
 
+def write(path, rate, data):
+    wavfile.write(path, rate, data)
+
+
+
+        
+    
 #load a folder of samples to create a training set
-def loadFolder(path, xShape=(1024,32), trainingPercentage=0.9, frameDurationSample=2048, windowStepSample=512):
+def loadSamplesFolder(path, fftShape=(1024,32), frameDurationSample=2048, windowStepSample=512, trainPercentage=0.9, fileLimit = 200):
     X = []
     Y = []
-    songs = {}
-    classes = {}
+    paths = []
+    #Load paths
     for root, dirs, files in os.walk(path):
         for idx, file in enumerate(files):
-#             if idx > 1:
-#                 break
-            
             if file.endswith(".wav"):
-                path = (os.path.join(root, file))
-                wave = load(path)
-                spectrogram, samplingRate = performFFTs(wave, frameDurationSample=frameDurationSample, windowStepSample=windowStepSample)
-                xn = np.fliplr(np.array([fft["frequencies"] for i,fft in enumerate(spectrogram) if i<32])).transpose()
-
-                if xn.shape[1]>=xShape[1]:
-                    if root not in classes:
-                        classes[root]=len(classes)
-                    y = classes[root]
-                    
-                    if y not in songs:
-                        songs[y]= []
-                    songs[y].append(xn)
-                
-                print path
-#                 if "snares" in path :
-#                     visualizeSpectrogram(wave=wave, spectrogram=spectrogram, samplingRate=samplingRate, frameDuration=frameDurationSample * samplingRate, name=path)
-
+                paths.append((root.split("/")[-1], os.path.join(root, file)))
     
-    maxSamples = min([len(samples) for label, samples in songs.iteritems()])
-    maxLabel = max([label for label, samples in songs.iteritems()])
-    for label, samples in songs.iteritems():
-        y = tensorFlowUtils.computeOneHotArray(label, maxLabel+1)
-        shuffle(samples)
-        for i in range(maxSamples):
-            X.append(samples[i])
-            Y.append(y)
-    #shuffle the songs 
-    
-    return np.array(X), np.array(Y)
+    #get some random path
+    paths = tensorFlowUtils.limitMultilabelSamples(paths, fileLimit)
+    #Load the files and do the fft
+    for label, path in paths:
+        wave = load(path)
+        spectrogram, samplingRate = performFFTs(wave, frameDurationSample=frameDurationSample, windowStepSample=windowStepSample)
+        
+        if len(spectrogram) < 32:
+            continue
+        xn = np.fliplr(np.array([fft["frequencies"] for i,fft in enumerate(spectrogram) if i<32])).transpose()
+        
+        X.append(xn)
+        Y.append(eval(label))
+        
+    X = np.array(X)
+    Y = np.array(Y)
+    return X[0:int(fileLimit*trainPercentage)], Y[0:int(fileLimit*trainPercentage)], X[int(fileLimit*trainPercentage):], Y[int(fileLimit*trainPercentage):] 
 
 # def getFFT(path):    
 #     fs, data = wavfile.read(path) # load the data
@@ -72,8 +66,7 @@ def loadFolder(path, xShape=(1024,32), trainingPercentage=0.9, frameDurationSamp
 #     plt.show()
     
 
-# def write(path, rate, data):
-#     wavfile.write(path, rate, data)
+
     
 # def filterRange(matrix, upperLimit = -20, lowerLimit = -120):
 #     upperMask = matrix[:,:] > upperLimit
@@ -116,12 +109,12 @@ def visualizeSpectrogram(wave=None, spectrogram=None, midi=None, name=None, samp
         cax = spectrogramPlot.imshow(points, extent=extent,  cmap="nipy_spectral", aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
         fig.colorbar(cax)
  
-#     if midi:
-#         for noteIdx in range(len(midi[0]["notes"])): #each note from the array [1, 0, 0, 0, 1]
-#             note = midiProxy.vectorToNote[noteIdx]
-#             thisNoteEventsTime = [event["startTime"] for event in midi if event["notes"][noteIdx]]
-#             thisNoteEventsHeight = [midiProxy.noteToFrequency[note] for i in range(len(thisNoteEventsTime))]
-#             plt.plot(thisNoteEventsTime, thisNoteEventsHeight, midiProxy.noteToPlotIcon[note])
+    if midi:
+        for noteIdx in range(len(midi[0]["notes"])): #each note from the array [1, 0, 0, 0, 1]
+            note = midiProxy.vectorToNote[noteIdx]
+            thisNoteEventsTime = [event["startTime"] for event in midi if event["notes"][noteIdx]]
+            thisNoteEventsHeight = [midiProxy.noteToFrequency[note] for i in range(len(thisNoteEventsTime))]
+            plt.plot(thisNoteEventsTime, thisNoteEventsHeight, midiProxy.noteToPlotIcon[note])
  
  
 #     spectrogramPlot.ylabel("frequencies (Hz)")

@@ -5,10 +5,8 @@ import fractions
 drum_conversion = {
     35:36, # acoustic bass drum -> bass drum (36)
     37:40, 38:40, # 37:side stick, 38: acou snare, 40: electric snare
-    43:41, # 41 low floor tom, 43 ghigh floor tom
-    47:45, # 45 low tom, 47 low-mid tom
-    50:48, # 50 high tom, 48 hi mid tom
-    44:42, # 42 closed HH, 44 pedal HH
+    43:41, 47:41, 45:41, 50:41, 48:41, # 41 low floor tom, 43 ghigh floor tom  # 45 low tom, 47 low-mid tom # 50 high tom, 48 hi mid tom
+    44:46, 42:46,  # 42 closed HH, 44 pedal HH, 46 open hithat
     57:49, # 57 Crash 2, 49 Crash 1
     59:51, 53:51, 55:51, # 59 Ride 2, 51 Ride 1, 53 Ride bell, 55 Splash
     52:49 # 52: China cymbal
@@ -17,23 +15,17 @@ noteToVector = {
     36 : 0,
     40 : 1,
     41 : 2,
-    45 : 3,
-    48 : 4,
-    42 : 5,
-    46 : 6,
-    49 : 7,
-    51 : 8
+    46 : 3,
+    49 : 4,
+    51 : 5
 }
 vectorToNote = {
     0 : 36, 
     1 : 40,
     2 : 41,
-    3 : 45,
-    4 : 48,
-    5 : 42,
-    6 : 46,
-    7 : 49,
-    8 : 51
+    3 : 46,
+    4 : 49,
+    5 : 51
 }
 noteToFrequency = {
     36 : 100,
@@ -57,7 +49,10 @@ noteToPlotIcon = {
     49 : "gs",
     51 : "g^"
 }
-emptyEvent = [0,0,0,0,0,0,0,0,0]
+emptyEvent = [0,0,0,0,0,0]
+
+def getVectorToNote(vector):
+    return [vectorToNote[idx] for idx, value in enumerate(vector) if value]
 
 def getTickToSeconds(deltaTicks, partPerBeats, microsecondsPerBeat):
     return float(deltaTicks) / partPerBeats * microsecondsPerBeat / 1000000 #number of tick since last event / part per beats * microseconds per beats
@@ -81,7 +76,7 @@ def loadMidiDrums(path):
         tickCursor = 0
         timeCursor = 0
         tempoIdx = -1
-        currentMpqn = 500000 # defaut microseconds/beats, wich is 120 bpm
+        currentMpqn = 500000 # default microseconds/beats, which is 120 bpm
 
         for event in track:
             tickCursor += event.tick #compute the absolute tick number since beginning
@@ -134,7 +129,7 @@ def loadMidiDrums(path):
         if event.numberNote in noteToVector : 
             timedEvents[event.tick].append(noteToVector[event.numberNote])
     
-    timedEvents = [{"startTime":time, "notes":[1 if idx in notes else 0 for idx in xrange(9)]} for time, notes in timedEvents.iteritems()]
+    timedEvents = [{"startTime":time, "notes":[1 if idx in notes else 0 for idx in xrange(6)]} for time, notes in timedEvents.iteritems()]
     return timedEvents
     #get biggest frequency containing every notes
     # frequency = 0;
