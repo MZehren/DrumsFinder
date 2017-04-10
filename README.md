@@ -3,6 +3,14 @@ This project aims to write the drums music sheet from an audio source.
 
 I'm unsing neural network with TensorFlow to write the partition. The network is looking for features in the frequencies domain to label the drum part.
 
+Creation of the dataset
+- Music band kind enough to give the score of their music 
+  - Atlantis Chronicles
+- Generated audio with a drum machine (generates humanization)
+  - Ezdrummer
+- Online database
+  - All chart
+  - ultimate-guitar
 
 TODO :
 - Use a long short-term memory (LSTM) network to handle the evolution in time of a sample.
