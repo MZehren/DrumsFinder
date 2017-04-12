@@ -27,7 +27,7 @@ def write(path, rate, data):
         
     
 #load a folder of samples to create a training set
-def loadSamplesFolder(path, fftShape=(1024,32), frameDurationSample=2048, windowStepSample=512, trainPercentage=0.9, fileLimit = 200):
+def loadSamplesFolder(path, fftShape=(1024,32), frameDurationSample=2048, windowStepSample=512, fileLimit = 200):
     X = []
     Y = []
     paths = []
@@ -44,16 +44,12 @@ def loadSamplesFolder(path, fftShape=(1024,32), frameDurationSample=2048, window
         wave = load(path)
         spectrogram, samplingRate = performFFTs(wave, frameDurationSample=frameDurationSample, windowStepSample=windowStepSample)
         
-        if len(spectrogram) < 32:
-            continue
-        xn = np.fliplr(np.array([fft["frequencies"] for i,fft in enumerate(spectrogram) if i<32])).transpose()
+        xn = np.fliplr(np.array([fft["frequencies"] for i,fft in enumerate(spectrogram)])).transpose()
         
         X.append(xn)
         Y.append(eval(label))
-        
-    X = np.array(X)
-    Y = np.array(Y)
-    return X[0:int(fileLimit*trainPercentage)], Y[0:int(fileLimit*trainPercentage)], X[int(fileLimit*trainPercentage):], Y[int(fileLimit*trainPercentage):] 
+
+    return np.array(X), np.array(Y) 
 
 # def getFFT(path):    
 #     fs, data = wavfile.read(path) # load the data
@@ -172,7 +168,7 @@ def performFFTs(waveForm, frameDurationSample=2048, windowStepSample=2048):
  
  
         #use a logarithmic scale
-        amplitude = np.log10(amplitude)
+        amplitude = np.log(amplitude)
         result.append({"startTime": startTime, "stopTime":stopTime, "frequencies": np.array(amplitude)})
  
     #normalize
@@ -180,5 +176,18 @@ def performFFTs(waveForm, frameDurationSample=2048, windowStepSample=2048):
     min = np.amin([fft["frequencies"] for fft in result])
     for fft in result:
         fft["frequencies"] = [(value - min) / (max - min) for value in fft["frequencies"]]
- 
+
     return result, samplingRate
+
+'''
+the mel scale is a perceptual scale of pitches judged by listeners to be equal in distance from one another.
+https://en.wikipedia.org/wiki/Mel-frequency_cepstrum
+TODO: see triangular overlapping windows
+'''
+def getMelFrequency(fft):
+    return 0
+'''
+MFC is a rep
+'''
+def getMFCC():
+    return 0;

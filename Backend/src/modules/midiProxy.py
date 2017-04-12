@@ -57,13 +57,8 @@ def getVectorToNote(vector):
 def getTickToSeconds(deltaTicks, partPerBeats, microsecondsPerBeat):
     return float(deltaTicks) / partPerBeats * microsecondsPerBeat / 1000000 #number of tick since last event / part per beats * microseconds per beats
 
-#returns an array of vectors wich are the drum played for each window in the music
-def loadMidiDrums(path):  
-    pattern = midi.read_midifile(path)
-    if pattern.format != 1 and pattern.resolution < 0:
-        print "ERROR midi format not implemented"
-
-    #dictionnary to track the absolute position of each events in tick and time instead of relative to each other
+#return dictionnary to track the absolute position of each events in tick and time instead of relative to each other
+def getTempoEvent(pattern):
     tempoEvents = []
     tickCursor = 0
     for tempoEvent in pattern[0]:
@@ -71,6 +66,15 @@ def loadMidiDrums(path):
         if tempoEvent.name == 'Set Tempo':
             currentMpqn = tempoEvent.mpqn
             tempoEvents.append((tickCursor, currentMpqn))
+    return tempoEvents
+
+#returns an array of vectors which are the drum played for each midi events in the music
+def loadMidiDrums(path):  
+    pattern = midi.read_midifile(path)
+    if pattern.format != 1 and pattern.resolution < 0:
+        print "ERROR midi format not implemented"
+
+    tempoEvents = getTempoEvent(pattern)
 
     for track in pattern[1:]:
         tickCursor = 0
