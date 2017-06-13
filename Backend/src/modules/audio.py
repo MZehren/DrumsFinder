@@ -14,6 +14,7 @@ from random import shuffle
 from matplotlib.cbook import Null
 
 
+
 #load a music file
 #currrently only wave is implemented
 def load(path):
@@ -22,70 +23,28 @@ def load(path):
 def write(path, rate, data):
     wavfile.write(path, rate, data)
 
-
-
-        
-    
-#load a folder of samples to create a training set
-def loadSamplesFolder(path, fftShape=(1024,32), frameDurationSample=2048, windowStepSample=512, fileLimit = 200):
-    X = []
-    Y = []
-    paths = []
-    #Load paths
-    for root, dirs, files in os.walk(path):
-        for idx, file in enumerate(files):
-            if file.endswith(".wav"):
-                paths.append((root.split("/")[-1], os.path.join(root, file)))
-    
-    #get some random path
-    paths = tensorFlowUtils.limitMultilabelSamples(paths, fileLimit)
-    #Load the files and do the fft
-    for label, path in paths:
-        wave = load(path)
-        spectrogram, samplingRate = performFFTs(wave, frameDurationSample=frameDurationSample, windowStepSample=windowStepSample)
-        
-        xn = np.fliplr(np.array([fft["frequencies"] for i,fft in enumerate(spectrogram)])).transpose()
-        
-        X.append(xn)
-        Y.append(eval(label))
-
-    return np.array(X), np.array(Y) 
-
-# def getFFT(path):    
-#     fs, data = wavfile.read(path) # load the data
-#     a = data.T[0] # this is a two channel soundtrack, I get the first track
-#     b=[(ele/2**8.)*2-1 for ele in a] # this is 8-bit track, b is now normalized on [-1,1)
-#     b=a
-#     c = fft(b) # calculate fourier transform (complex numbers list)
-#     d = len(c)/2  # you only need half of the fft list (real signal symmetry)
-#     plt.plot(abs(c[:(d-1)]),'r') 
-#     plt.show()
     
 
 
-    
-# def filterRange(matrix, upperLimit = -20, lowerLimit = -120):
-#     upperMask = matrix[:,:] > upperLimit
-#     matrix[upperMask] = lowerLimit
-#     
-#     lowerMask = matrix[:,:] < lowerLimit
-#     matrix[lowerMask] = lowerLimit
-#     
-#     return matrix
-
-
-#duration is in seconds
-#sampling is in Hz
-#thus the highest calculable frequency is samplingRate / 2
-#the lowest calculable frequency is 1/duration, but y[0] correspond to sum(x)
-# The number of frequencies calculated are the number of samples / 2. And they are distributed evenly between 0 and the highest one.
-def getFrequencies(sampleNumber, samplingRate):
-    frequencies = np.fft.fftfreq(int(sampleNumber), d = 1/float(samplingRate))
+'''
+Return the Discrete Fourier Transform sample frequencies
+'''
+def getFrequenciesHz(sampleNumber, samplingRate):
+    frequencies = np.fft.rfftfreq(int(sampleNumber), d = 1/float(samplingRate))
     return frequencies[0: int(pl.ceil(sampleNumber/2)) ] #we used only half the data points
     #return np.linspace(0.0, (samplingRate / 2), sampleNumber / 2 + 1) #todo: why is it +1 ?
 
+'''
+Return the mel frequencies
+'''
+def getFrequenciesMel(sampleNumber, samplingRate):
+    low_freq_mel = 0
+    high_freq_mel = (2595 * np.log10(1 + (samplingRate / 2) / 700))  # Convert Hz to Mel
+    return np.linspace(low_freq_mel, high_freq_mel, sampleNumber + 2)  # Equally spaced in Mel scale
+   
+
 #plot an audio wave, the spectrogram from the fft, or a midi. 
-def visualizeSpectrogram(wave=None, spectrogram=None, midi=None, name=None, samplingRate=44100, frameDuration=0.075):
+def visualizeSpectrogram(wave=None, spectrogram=None, midi=None, name=None, samplingRate=44100):
 
     fig, (wavePlot, spectrogramPlot) = plt.subplots(2)
     
@@ -99,10 +58,10 @@ def visualizeSpectrogram(wave=None, spectrogram=None, midi=None, name=None, samp
     if spectrogram:
         #todo: specify zmin, zmax (for colors)
         
-        frequenciesBoundaries = getFrequencies(len(spectrogram[0]["frequencies"]), samplingRate)
+        frequenciesBoundaries = getFrequenciesHz(len(spectrogram[0]["frequencies"]), samplingRate)
         extent = [0, spectrogram[-1]["stopTime"], frequenciesBoundaries[0], frequenciesBoundaries[-1]] # [xmin, xmax, ymin, ymax], xmax is the starting time of the last fft done
         points = np.fliplr(np.array([fft["frequencies"] for fft in spectrogram])).transpose()
-        cax = spectrogramPlot.imshow(points, extent=extent,  cmap="nipy_spectral", aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
+        cax = spectrogramPlot.imshow(points,  extent=extent, cmap="nipy_spectral", aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
         fig.colorbar(cax)
  
     if midi:
@@ -122,70 +81,82 @@ def visualizeSpectrogram(wave=None, spectrogram=None, midi=None, name=None, samp
 
 
 
-
-    
-# #frame duration shouldn't be below 0.1s, as the lowest frequency heard is 20Hz. 20Hz is one oscillation each 0.05s. If the frame is shorter than twice the distance, we can't find those frequencies which may help (as we hear them).
-#TODO: do not create a dictionnary, create a matrix right away
-def performFFTs(waveForm, frameDurationSample=2048, windowStepSample=2048):
+'''
+frame duration shouldn't be below 0.1s, as the lowest frequency heard is 20Hz. 20Hz is one oscillation each 0.05s. 
+If the frame is shorter than twice the distance, we can't find those frequencies which may help (as we hear them).
+at 44kHz, 10ms = 440 Hz
+TODO: do not create a dictionnary, create a matrix right away
+see http://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html for a good tutorial
+'''
+def performFFTs(waveForm, frameDuration=0.025, frameStride=0.01):
     samplingRate = waveForm[0]
-    normalizedSound = waveForm[1] #/ (2.**15) #divide each point by 2^15 to normalize. 2^15 is because of the encoding of the waveForm 
+    frameDurationSample = int(frameDuration * samplingRate)
+    frameStrideSample = int(frameStride * samplingRate)
+    
+    #normalizedSound = waveForm[1] / (2.**15) #divide each point by 2^15 to normalize. 2^15 is because of the encoding of the waveForm 
     channel0=0
     if len(waveForm[1].shape) != 1 :
-        channel0 = normalizedSound[:,0] #todo: use both entries
+        channel0 = (waveForm[1][:,0] + waveForm[1][:,1]) / 2 #todo: use both entries
     else :
-        channel0 = normalizedSound
+        channel0 = waveForm[1]
          
     result = []
     cursor = 0
     while cursor + frameDurationSample < len(channel0) : #for each frame
         frame = channel0[int(cursor): int(cursor + frameDurationSample)]
-        startTime = float(cursor) / samplingRate
-        cursor += windowStepSample
-        stopTime = float(cursor) / samplingRate
-         
-        amplitude = np.fft.fft(frame)
-        length = len(frame)
-         
-        #the fourier transform of the tone returned by the fft function contains both magnitude and phase information and is given in a complex representation (i.e. returns complex numbers). 
-        #By taking the absolute value of the fourier transform we get the information about the magnitude of the frequency components.
-        nUniquePts = pl.ceil((length + 1 ) / 2.0)
-        amplitude = amplitude[1:int(nUniquePts)] #Since FFT is symmetric over it's centre, half the values are just enough. the first value is the mean
-        amplitude = abs(amplitude)
- 
-        amplitude = [value if value > 0 else 10 for value in amplitude] #TODO: direty hack here to prevent some volue to be infinite
- 
-        # scale by the number of points so that the magnitude does not depend on the length of the signal or on its sampling frequency  
-        #amplitude = amplitude / float(length)
-         
-        #amplitude = amplitude / 32768 #todo: only ogr 16 bits https://fr.wikipedia.org/wiki/D%C3%A9cibel_pleine_%C3%A9chelle_(dB_FS)
-        #amplitude = amplitude ** 2  # square it to get the power spectrum from the amplitude
-         
- 
-        #if length % 2 > 0: # we've got odd number of points fft
-        #    amplitude[1:len(amplitude)] = amplitude[1:len(amplitude)] * 2
-        #else:
-        #    amplitude[1:len(amplitude) -1] = amplitude[1:len(amplitude) - 1] * 2 # we've got even number of points fft
- 
- 
-        #use a logarithmic scale
-        amplitude = np.log(amplitude)
-        result.append({"startTime": startTime, "stopTime":stopTime, "frequencies": np.array(amplitude)})
+        
+        #apply a hamming window to reduce spectral leakage
+        frame *= np.hamming(frameDurationSample)
+        
+        #Fourier-Transform and Power Spectrum
+        NFFT = 512 # number of points in the fft to use
+        magnitudeFrame = np.absolute(np.fft.rfft(frame, NFFT))  # Magnitude of the FFT
+        powerSpectrumFrame = ((1.0 / NFFT) * ((magnitudeFrame) ** 2))  # Power Spectrum
+
+        #Filter Banks
+        filter_banks = filterBanks(powerSpectrumFrame, samplingRate, NFFT)
+        
+        result.append({"startTime": float(cursor) / samplingRate, "stopTime":float(cursor + frameStrideSample) / samplingRate, "frequencies": np.array(filter_banks)})
+        cursor += frameStrideSample
  
     #normalize
     max = np.amax([fft["frequencies"] for fft in result])
     min = np.amin([fft["frequencies"] for fft in result])
+    mean = np.mean([fft["frequencies"] for fft in result])
     for fft in result:
-        fft["frequencies"] = [(value - min) / (max - min) for value in fft["frequencies"]]
+        fft["frequencies"] = [(value - min) / (max - min) * 2 - 1 for value in fft["frequencies"]]
 
     return result, samplingRate
 
+
+
+
+
 '''
 the mel scale is a perceptual scale of pitches judged by listeners to be equal in distance from one another.
-https://en.wikipedia.org/wiki/Mel-frequency_cepstrum
-TODO: see triangular overlapping windows
 '''
-def getMelFrequency(fft):
-    return 0
+def filterBanks(frame, samplingRate, NFFT, nfilter = 40):
+    low_freq_mel = 0
+    high_freq_mel = (2595 * np.log10(1 + (samplingRate / 2) / 700))  # Convert Hz to Mel
+    mel_points = np.linspace(low_freq_mel, high_freq_mel, nfilter + 2)  # Equally spaced in Mel scale
+    hz_points = (700 * (10**(mel_points / 2595) - 1))  # Convert Mel to Hz
+    bin = np.floor((NFFT + 1) * hz_points / samplingRate)
+    
+    fbank = np.zeros((nfilter, int(np.floor(NFFT / 2 + 1))))
+    for m in range(1, nfilter + 1):
+        f_m_minus = int(bin[m - 1])   # left
+        f_m = int(bin[m])             # center
+        f_m_plus = int(bin[m + 1])    # right
+    
+        for k in range(f_m_minus, f_m):
+            fbank[m - 1, k] = (k - bin[m - 1]) / (bin[m] - bin[m - 1])
+        for k in range(f_m, f_m_plus):
+            fbank[m - 1, k] = (bin[m + 1] - k) / (bin[m + 1] - bin[m])
+    filter_banks = np.dot(frame, fbank.T)
+    filter_banks = np.where(filter_banks == 0, np.finfo(float).eps, filter_banks)  # Numerical Stability
+    filter_banks = 20 * np.log10(filter_banks)  # dB
+    return filter_banks
+
 '''
 MFC is a rep
 '''

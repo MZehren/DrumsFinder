@@ -7,5 +7,5 @@ setup(name='DrumsFinder',
       description='Deep Learning in Python for MIR',
       author='Mickael Zehren',
       author_email='mickael.zehren@gmail.com',
-      install_requires=['numpy', 'scipy', 'matplotlib', 'keras', 'python-midi', 'six', 'h5py'],
+      install_requires=['scipy', 'matplotlib', 'python-midi', 'scympy'],
       )
