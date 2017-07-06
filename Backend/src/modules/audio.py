@@ -85,7 +85,7 @@ def visualizeSpectrogram(wave=None, spectrogram=None, midi=None, name=None, samp
 frame duration shouldn't be below 0.1s, as the lowest frequency heard is 20Hz. 20Hz is one oscillation each 0.05s. 
 If the frame is shorter than twice the distance, we can't find those frequencies which may help (as we hear them).
 at 44kHz, 10ms = 440 Hz
-TODO: do not create a dictionnary, create a matrix right away
+TODO: do not create a dictionary, create a matrix right away
 see http://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html for a good tutorial
 '''
 def performFFTs(waveForm, frameDuration=0.025, frameStride=0.01):
@@ -157,8 +157,4 @@ def filterBanks(frame, samplingRate, NFFT, nfilter = 40):
     filter_banks = 20 * np.log10(filter_banks)  # dB
     return filter_banks
 
-'''
-MFC is a rep
-'''
-def getMFCC():
-    return 0;
+
