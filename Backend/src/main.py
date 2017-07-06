@@ -101,12 +101,14 @@ def inference(x, y_, keep_prob):
     return y_conv
 #to see a tutorial : https://www.tensorflow.org/get_started/mnist/pros
 def getConvMultiLabelModel():
-    modelSerialisationName = "../../Data/models/1"
+    modelSerialisationName = "../../Data/models/convolutional"
+    logSerialisationName = "../../Data/models/logs"
     sess = tf.InteractiveSession() # an interactive session will be used by default for the eval and run operation
  
     #create model
     #we have to reshape the images as a 4D tensor, the first dimension is the minibatch size
     #so we create the input variables here
+    global_step = tf.Variable(0, trainable=False) #we store the global step
     x = tf.placeholder(tf.float32, [None, 40, 50, 1]) #X images de 1024 par 32 pixels avec 1 channel
     y_ = tf.placeholder(tf.float32, [None, 6])  
     keep_prob = tf.placeholder(tf.float32) #for dropout
@@ -115,7 +117,7 @@ def getConvMultiLabelModel():
     #learn
     cross_entropy = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=y_, logits=y_conv))
     tf.summary.scalar('loss', cross_entropy) #we save the value for the logs
-    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy, global_step=global_step)
     
     #TODO: Y should be 0 and 1 or -1 and 1 ?   
     prediction = tf.greater(y_conv, tf.constant(0.5)) 
@@ -126,7 +128,8 @@ def getConvMultiLabelModel():
     summary = tf.summary.merge_all()#collect all the summaries into a single Tensor
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
-    summary_writer = tf.summary.FileWriter(modelSerialisationName, sess.graph)
+    train_writer = tf.summary.FileWriter(logSerialisationName + "/train", sess.graph)
+    test_writer = tf.summary.FileWriter(logSerialisationName + "/test")
     
     #load model
     if os.path.isfile(modelSerialisationName + ".index"):
@@ -134,25 +137,33 @@ def getConvMultiLabelModel():
         saver.restore(sess, modelSerialisationName)
         
     #train model
+
     while(True):
-        for step in range(10):
-            print "\n", str(step), "load data"
-            X, Y_ = samples.loadSamplesFolder("../../Data/samples/testAtlantis/train", fileLimit=32)
-            print "shape of input :", X.shape
-            X = np.reshape(X, (-1, 40, 50, 1)) #reshape to add the last dimension
-            train_step.run(feed_dict={x: X, y_: Y_, keep_prob: 0.5})
+        step = sess.run(global_step)
+        print "\n", str(step), "load data"
+        X, Y_ = samples.loadSamplesFolder("../../Data/samples/testAtlantis/train", fileLimit=32)
+        print "shape of input :", X.shape
+        X = np.reshape(X, (-1, 40, 50, 1)) #reshape to add the last dimension
+        train_step.run(feed_dict={x: X, y_: Y_, keep_prob: 0.5})
+            
+        #log training data
         summary_str = sess.run(summary, {x: X, y_: Y_, keep_prob: 0.5})
-        summary_writer.add_summary(summary_str, step)
-    
+        train_writer.add_summary(summary_str, step)
         #test model
-        X, Y_ = samples.loadSamplesFolder("../../Data/samples/testAtlantis/test", fileLimit=32)
-        X = np.reshape(X, (-1, 40, 50, 1))
-        test_accuracy = accuracy.eval(feed_dict={x:X, y_:Y_ ,keep_prob: 1.0})
-        print("Test accuracy", test_accuracy)
-        print Y_
-        print sess.run(y_conv, feed_dict={x:X, keep_prob: 1.0})
-        print sess.run(prediction, feed_dict={x:X, keep_prob: 1.0})
-        print "model saved : ", saver.save(sess, modelSerialisationName)
+        if(step%10 == 0):
+            X, Y_ = samples.loadSamplesFolder("../../Data/samples/testAtlantis/test", fileLimit=32)
+            X = np.reshape(X, (-1, 40, 50, 1))
+            #log test data
+            summary_str = sess.run(summary, {x: X, y_: Y_, keep_prob: 0.5})
+            test_writer.add_summary(summary_str, step)
+#             test_accuracy = accuracy.eval(feed_dict={x:X, y_:Y_ ,keep_prob: 1.0})
+#             print("Test accuracy", test_accuracy)
+#             print Y_
+#             print sess.run(y_conv, feed_dict={x:X, keep_prob: 1.0})
+#             print sess.run(prediction, feed_dict={x:X, keep_prob: 1.0})
+            print "model saved : ", saver.save(sess, modelSerialisationName)
+        
+
    
    
 getConvMultiLabelModel()
