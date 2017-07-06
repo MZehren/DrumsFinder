@@ -128,7 +128,7 @@ def inference(x, y_, keep_prob):
         
         h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
         h_pool2 = max_pool_2x2(h_conv2)
-    
+        
     with tf.name_scope('fullyConnected'):
         #densely connected layer
         #we add a layer of 1024 neurons
@@ -161,6 +161,7 @@ def getConvMultiLabelModel():
     #so we create the input variables here
     global_step = tf.Variable(0, trainable=False) #we store the global step
     x = tf.placeholder(tf.float32, [None, 40, 50, 1]) #X images de 1024 par 32 pixels avec 1 channel
+    tf.summary.image("image", x, max_outputs=1) #summary the first image
     y_ = tf.placeholder(tf.float32, [None, 6])  
     keep_prob = tf.placeholder(tf.float32) #for dropout
     y_conv = inference(x, y_, keep_prob)
