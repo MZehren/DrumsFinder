@@ -49,7 +49,7 @@ noteToPlotIcon = {
     49 : "gs",
     51 : "g^"
 }
-emptyEvent = [0,0,0,0,0,0]
+emptyEvent = [-1,-1,-1,-1,-1,-1]
 
 def getVectorToNote(vector):
     return [vectorToNote[idx] for idx, value in enumerate(vector) if value]
@@ -133,7 +133,7 @@ def loadMidiDrums(path):
         if event.numberNote in noteToVector : 
             timedEvents[event.tick].append(noteToVector[event.numberNote])
     
-    timedEvents = [{"startTime":time, "notes":[1 if idx in notes else 0 for idx in xrange(6)]} for time, notes in timedEvents.iteritems()]
+    timedEvents = [{"startTime":time, "notes":[1 if idx in notes else -1 for idx in xrange(6)]} for time, notes in timedEvents.iteritems()]
     return timedEvents
     #get biggest frequency containing every notes
     # frequency = 0;

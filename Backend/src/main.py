@@ -114,6 +114,8 @@ def inference(x, y_, keep_prob):
         #so we create the filters variable here
         W_conv1 = weight_variable([10, 10, 1, 32]) # patch of 5 by 5 on 1 channel with 32 outputs
         b_conv1 = bias_variable([32])
+        tf.summary.histogram("W_conv1", W_conv1)
+        tf.summary.histogram("b_conv1", b_conv1)
         
         #the first layer
         h_conv1 = tf.nn.relu(conv2d(x, W_conv1) + b_conv1)
@@ -125,6 +127,8 @@ def inference(x, y_, keep_prob):
         # we stack layers. This one will have 64 features for each 10*10 patch
         W_conv2 = weight_variable([10, 10, 32, 64])
         b_conv2 = bias_variable([64])
+        tf.summary.histogram("W_conv2", W_conv2)
+        tf.summary.histogram("b_conv2", b_conv2)
         
         h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
         h_pool2 = max_pool_2x2(h_conv2)
@@ -135,6 +139,8 @@ def inference(x, y_, keep_prob):
         #each neuron is fully connected to the previous input, so 10*12*64
         W_fc1 = weight_variable([10 * 13 * 64, 1024])
         b_fc1 = bias_variable([1024])
+        tf.summary.histogram("W_fc1", W_fc1)
+        tf.summary.histogram("b_fc1", b_fc1)
         
         #we reshape the output tensor to a 2D tensor which will be plugged in a fully connected layer
         h_pool2_flat = tf.reshape(h_pool2, [-1, 10*13*64])
@@ -146,11 +152,14 @@ def inference(x, y_, keep_prob):
         #Readout
         W_fc2 = weight_variable([1024, 6])
         b_fc2 = bias_variable([6])
+        tf.summary.histogram("W_fc2", W_fc2)
+        tf.summary.histogram("b_fc2", b_fc2)
         
         y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
     
     return y_conv
 #to see a tutorial : https://www.tensorflow.org/get_started/mnist/pros
+
 def getConvMultiLabelModel():
     modelSerialisationName = "../../Data/models/convolutional"
     logSerialisationName = "../../Data/models/logs"
@@ -172,11 +181,16 @@ def getConvMultiLabelModel():
     train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy, global_step=global_step)
     
     #TODO: Y should be 0 and 1 or -1 and 1 ?   
-    prediction = tf.greater(y_conv, tf.constant(0.5)) 
+    prediction = tf.greater(y_conv, tf.constant(0)) 
     correct_prediction = tf.equal(prediction, tf.greater(y_,tf.constant(0.5)))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    tf.summary.scalar('accuracy', accuracy)#we save the value for the logs
-    
+    meanAccuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    tf.summary.scalar('meanAccuracy', meanAccuracy)#we save the value for the logs
+    accuracyPerNote = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), axis=0)
+    accuracyPerWholeSample = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), axis=1)
+    accuracyPerWholeSampleMean = tf.reduce_mean(tf.cast(tf.equal(accuracyPerWholeSample, tf.constant(1.0)), tf.float32))
+    tf.summary.scalar("accuracyPerWholeSampleMean", accuracyPerWholeSampleMean)
+    tf.summary.histogram("accuracyPerNote", accuracyPerNote)
+        
     summary = tf.summary.merge_all()#collect all the summaries into a single Tensor
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
@@ -202,9 +216,9 @@ def getConvMultiLabelModel():
         summary_str = sess.run(summary, {x: X, y_: Y_, keep_prob: 0.5})
         train_writer.add_summary(summary_str, step)
         #test model
-        if(step%10 == 0):
+        if(step%3 == 0):
             X, Y_ = samples.loadSamplesFolder("../../Data/samples/testAtlantis/test", fileLimit=32)
-            X = np.reshape(X, (-1, 40, 50, 1))
+            X = np.reshape(X, (-1, 40, 50, 1)) 
             #log test data
             summary_str = sess.run(summary, {x: X, y_: Y_, keep_prob: 0.5})
             test_writer.add_summary(summary_str, step)
@@ -214,7 +228,8 @@ def getConvMultiLabelModel():
 #             print sess.run(y_conv, feed_dict={x:X, keep_prob: 1.0})
 #             print sess.run(prediction, feed_dict={x:X, keep_prob: 1.0})
             print "model saved : ", saver.save(sess, modelSerialisationName)
-        
+#             print sess.run(accuracyPerWholeSample, feed_dict={x:X, y_:Y_ ,keep_prob: 1.0})
+#             print sess.run(accuracyPerWholeSampleMean, feed_dict={x:X, y_:Y_ ,keep_prob: 1.0})
 
    
    
