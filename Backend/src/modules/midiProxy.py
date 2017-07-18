@@ -2,22 +2,40 @@
 import midi
 import fractions
 
+
+
+
+
 drum_conversion = {
     35:36, # acoustic bass drum -> bass drum (36)
     37:40, 38:40, # 37:side stick, 38: acou snare, 40: electric snare
     43:41, 47:41, 45:41, 50:41, 48:41, # 41 low floor tom, 43 ghigh floor tom  # 45 low tom, 47 low-mid tom # 50 high tom, 48 hi mid tom
     44:46, 42:46,  # 42 closed HH, 44 pedal HH, 46 open hithat
     57:49, # 57 Crash 2, 49 Crash 1
-    59:51, 53:51, 55:51, # 59 Ride 2, 51 Ride 1, 53 Ride bell, 55 Splash
-    52:49 # 52: China cymbal
+    59:49, 53:49, 55:49, 51:49, # 59 Ride 2, 51 Ride 1, 53 Ride bell, 55 Splash
+    52:49, # 52: China cymbal
+    
+    #midi notes used by the game Phase Shifter
+    #the controller doesn't seem to have a precise representation of each drums
+    #when the 110 is played, the 98 is played too but should'nt
+    #when the 111 is played, the 99 is played too but shouldn't
+    #when the 112 is played, the 100 is played too but shouldn't
+    #95:?
+    96:36, #kick pad
+    97:40, #snare pad
+    98:46, #hihat pad
+    99:49, #right cymbal
+    100:49, #left cymbal
+    110:41, #alto tom
+    111:41, #med tom
+    112:41, #floortom 
 }
 noteToVector = {
     36 : 0,
     40 : 1,
     41 : 2,
     46 : 3,
-    49 : 4,
-    51 : 5
+    49 : 4
 }
 vectorToNote = {
     0 : 36, 
@@ -25,7 +43,6 @@ vectorToNote = {
     2 : 41,
     3 : 46,
     4 : 49,
-    5 : 51
 }
 noteToFrequency = {
     36 : 100,
@@ -35,8 +52,7 @@ noteToFrequency = {
     48 : 2000,
     42 : 3000,
     46 : 3000,
-    49 : 4000,
-    51 : 6000
+    49 : 4000
 }
 noteToPlotIcon = {
     36 : "bo",
@@ -46,10 +62,9 @@ noteToPlotIcon = {
     48 : "ro",
     42 : "gx",
     46 : "go",
-    49 : "gs",
-    51 : "g^"
+    49 : "gs"
 }
-emptyEvent = [-1,-1,-1,-1,-1,-1]
+emptyEvent = [0,0,0,0,0,0]
 
 def getVectorToNote(vector):
     return [vectorToNote[idx] for idx, value in enumerate(vector) if value]
@@ -102,7 +117,7 @@ def loadMidiDrums(path):
             timeCursor += getTickToSeconds(event.tick, pattern.resolution, currentMpqn) 
             event.tick = timeCursor #todo: assign a new var
         
-    tracks = [[event for event in track if isinstance(event, midi.NoteOnEvent) and event.channel == 9] for track in pattern] 
+    tracks = [[event for event in track if isinstance(event, midi.NoteOnEvent) and event.data[1] != 0 ] for track in pattern] # and event.channel == 9
 
     drumTracks = []
     for idx, track in enumerate(tracks):
@@ -110,8 +125,7 @@ def loadMidiDrums(path):
             drumTracks.append(track)
         
     if len(drumTracks) != 1 :
-        print "ERROR not enough or too much drumtracks"
-        print len(drumTracks) 
+        print "ERROR not enough or too much drumtracks : ", len(drumTracks) 
         return
     
     drumsEvents = drumTracks[0]
@@ -133,7 +147,7 @@ def loadMidiDrums(path):
         if event.numberNote in noteToVector : 
             timedEvents[event.tick].append(noteToVector[event.numberNote])
     
-    timedEvents = [{"startTime":time, "notes":[1 if idx in notes else -1 for idx in xrange(6)]} for time, notes in timedEvents.iteritems()]
+    timedEvents = [{"startTime":time, "notes":[1 if idx in notes else 0 for idx in xrange(len(noteToVector))]} for time, notes in timedEvents.iteritems()]
     return timedEvents
     #get biggest frequency containing every notes
     # frequency = 0;

@@ -20,8 +20,8 @@ def writeSamples(midiPath, audioPath, outputPath):
     
 
     #check correctness
-    #spectrogram, samplingRate = audio.performFFTs(audioLoad)
-    #audio.visualizeSpectrogram(wave=None, spectrogram=spectrogram, midi=midi, name=midiPath)
+#     spectrogram, samplingRate = audio.performFFTs(audioLoad)
+#     audio.visualizeSpectrogram(wave=None, spectrogram=spectrogram, midi=midi, name=midiPath)
 
     #lowest frequency = 10Hz = 0.1s per wave
     #time between 16th notes : 200bpm = 300 b/ms = 0.3 b/s = 0.075 16th/s
@@ -56,7 +56,7 @@ def writeSamples(midiPath, audioPath, outputPath):
 '''
 do as writeSamples but with a folder of files containing midi and wave files with the same name
 ''' 
-def writeSamplesFromFolder(outputPath, inputPath):
+def writeSamplesFromFolder(inputPath , outputPath):
     for root, dirs, files in os.walk(inputPath):
         for idx, file in enumerate(files):
             if file.endswith(".wav"):
@@ -92,7 +92,8 @@ def loadSamplesFolder(path, fileLimit = 200):
     return np.array(X), np.array(Y) 
 
 
-# 
-# writeSamplesFromFolder("../../../Data/samples/testAtlantis/test", "../../../Data/handmade/test")
-# writeSamplesFromFolder("../../../Data/samples/testAtlantis/train", "../../../Data/handmade/train")
-# print "Done !"
+ 
+# writeSamplesFromFolder("../../../Data/handmade/test", "../../../Data/samples/testAtlantis/test")
+
+writeSamplesFromFolder("../../../Data/EOF/in", "../../../Data/EOF/out")
+print "Done !"
