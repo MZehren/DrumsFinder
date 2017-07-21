@@ -95,5 +95,6 @@ def loadSamplesFolder(path, fileLimit = 200):
  
 # writeSamplesFromFolder("../../../Data/handmade/test", "../../../Data/samples/testAtlantis/test")
 
-writeSamplesFromFolder("../../../Data/EOF/in", "../../../Data/EOF/out")
+writeSamplesFromFolder("../../../Data/EOF/in/16", "../../../Data/EOF/out")
+
 print "Done !"

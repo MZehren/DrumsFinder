@@ -17,10 +17,8 @@ drum_conversion = {
     
     #midi notes used by the game Phase Shifter
     #the controller doesn't seem to have a precise representation of each drums
-    #when the 110 is played, the 98 is played too but should'nt
-    #when the 111 is played, the 99 is played too but shouldn't
-    #when the 112 is played, the 100 is played too but shouldn't
-    #95:?
+  
+    95:36, #? not sure
     96:36, #kick pad
     97:40, #snare pad
     98:46, #hihat pad
@@ -30,6 +28,17 @@ drum_conversion = {
     111:41, #med tom
     112:41, #floortom 
 }
+
+#when the 110 is played, the 98 is played too but should'nt
+#when the 111 is played, the 99 is played too but shouldn't
+#when the 112 is played, the 100 is played too but shouldn't
+#it's not ghosting but artefact from the pads used to tab the musics
+pad_ghosting = {
+    98:110, 
+    99:111, 
+    100:112,  
+}
+
 noteToVector = {
     36 : 0,
     40 : 1,
@@ -124,10 +133,14 @@ def loadMidiDrums(path):
         if len(track):
             drumTracks.append(track)
         
-    if len(drumTracks) != 1 :
-        print "ERROR not enough or too much drumtracks : ", len(drumTracks) 
+        
+    if len(drumTracks) == 0 :
+        print "ERROR not enough drumtrack : ", len(drumTracks) 
         return
     
+    if len(drumTracks) > 1 :
+        print "ERROR too much drumtrack : ", len(drumTracks) 
+        
     drumsEvents = drumTracks[0]
     
     if len(drumsEvents) == 0:
@@ -137,17 +150,31 @@ def loadMidiDrums(path):
 
     timedEvents = {};
 
-    
+    #group events by time
     for event in drumsEvents:
         event.numberNote = drum_conversion[event.data[0]] if event.data[0] in drum_conversion else event.data[0]
-   
+        #noteToVector[event.numberNote]
+        
         if event.tick not in timedEvents:
             timedEvents[event.tick] = []
         
         if event.numberNote in noteToVector : 
-            timedEvents[event.tick].append(noteToVector[event.numberNote])
+            timedEvents[event.tick].append(event.data[0])
     
-    timedEvents = [{"startTime":time, "notes":[1 if idx in notes else 0 for idx in xrange(len(noteToVector))]} for time, notes in timedEvents.iteritems()]
+    #remove ghosting notes 
+    timedEvents = {tick: [note for note in notes if not(note in pad_ghosting and pad_ghosting[note] in notes)] for tick, notes in timedEvents.iteritems()}    
+    
+    #convert all the notes to the main notes
+    timedEvents = {tick: [drum_conversion[note] if note in drum_conversion else note for note in notes] for tick, notes in timedEvents.iteritems()}    
+    
+    #convert the simplified notes to their vector indexes
+    timedEvents = {tick: [noteToVector[note] for note in notes] for tick, notes in timedEvents.iteritems()}  
+        
+    #convert the vector index to real vectors
+    timedEvents = {tick: [1 if idx in notes else 0 for idx in xrange(len(noteToVector))] for tick, notes in timedEvents.iteritems()}  
+    
+    #convert the dictionnary to an array
+    timedEvents = [{"startTime":time, "notes":notes} for time, notes in timedEvents.iteritems()]
     return timedEvents
     #get biggest frequency containing every notes
     # frequency = 0;

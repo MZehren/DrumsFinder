@@ -61,7 +61,7 @@ def visualizeSpectrogram(wave=None, spectrogram=None, midi=None, name=None, samp
         frequenciesBoundaries = getFrequenciesHz(len(spectrogram[0]["frequencies"]), samplingRate)
         extent = [0, spectrogram[-1]["stopTime"], frequenciesBoundaries[0], frequenciesBoundaries[-1]] # [xmin, xmax, ymin, ymax], xmax is the starting time of the last fft done
         points = np.fliplr(np.array([fft["frequencies"] for fft in spectrogram])).transpose()
-        cax = spectrogramPlot.imshow(points,  extent=extent, cmap="nipy_spectral", aspect="auto") #todo: Image data can not convert to float. I don't understand this error.
+        cax = spectrogramPlot.imshow(points,  extent=extent, aspect="auto") #todo: Image data can not convert to float. I don't understand this error. cmap="nipy_spectral"
         fig.colorbar(cax)
  
     if midi:
@@ -106,7 +106,7 @@ def performFFTs(waveForm, frameDuration=0.025, frameStride=0.01):
         frame = channel0[int(cursor): int(cursor + frameDurationSample)]
         
         #apply a hamming window to reduce spectral leakage
-        frame *= np.hamming(frameDurationSample)
+        frame = np.multiply(frame, np.hamming(frameDurationSample), casting="unsafe")
         
         #Fourier-Transform and Power Spectrum
         NFFT = 512 # number of points in the fft to use
