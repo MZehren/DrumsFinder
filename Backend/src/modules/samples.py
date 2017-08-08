@@ -94,6 +94,6 @@ def loadSamplesFolder(path, fileLimit = 200):
 
  
 # writeSamplesFromFolder("../../../Data/handmade/test", "../../../Data/samples/testAtlantis/test")
-if(len(sys.argv) == 3):
+if(len(sys.argv) == 3 and "samples.py" in sys.argv[0]):
     writeSamplesFromFolder(sys.argv[1], sys.argv[2])
     print "Done !"

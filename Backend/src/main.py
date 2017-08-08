@@ -232,7 +232,7 @@ def getConvMultiLabelModel(trainDataPath, testDataPath):
 #             print sess.run(accuracyPerWholeSampleMean, feed_dict={x:X, y_:Y_ ,keep_prob: 1.0})
 
    
-if(len(sys.argv) == 3):
+if(len(sys.argv) == 3 and "main.py" in sys.argv[0]):
     getConvMultiLabelModel(sys.argv[1], sys.argv[2])
     
 print "gud"
