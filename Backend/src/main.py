@@ -181,7 +181,7 @@ def getConvMultiLabelModel(trainDataPath, testDataPath):
     train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy, global_step=global_step)
     
     #TODO: Y should be 0 and 1 or -1 and 1 ?   
-    prediction = tf.greater(y_conv, tf.constant(0)) 
+    prediction = tf.greater(y_conv, tf.constant(0.5)) 
     correct_prediction = tf.equal(prediction, tf.greater(y_,tf.constant(0.5)))
     meanAccuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     tf.summary.scalar('meanAccuracy', meanAccuracy)#we save the value for the logs
