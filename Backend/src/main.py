@@ -171,7 +171,7 @@ def getConvMultiLabelModel(trainDataPath, testDataPath):
     global_step = tf.Variable(0, trainable=False) #we store the global step
     x = tf.placeholder(tf.float32, [None, 40, 50, 1]) #X images de 1024 par 32 pixels avec 1 channel
     tf.summary.image("image", x, max_outputs=1) #summary the first image
-    y_ = tf.placeholder(tf.float32, [None, 6])  
+    y_ = tf.placeholder(tf.float32, [None, 5])  
     keep_prob = tf.placeholder(tf.float32) #for dropout
     y_conv = inference(x, y_, keep_prob)
     
