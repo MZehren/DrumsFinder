@@ -5,7 +5,7 @@ import numpy as np
 import audio
 import midiProxy
 import tensorFlowUtils
-
+import sys
 
 
                 
@@ -94,7 +94,6 @@ def loadSamplesFolder(path, fileLimit = 200):
 
  
 # writeSamplesFromFolder("../../../Data/handmade/test", "../../../Data/samples/testAtlantis/test")
-
-writeSamplesFromFolder("../../../Data/EOF/in/16", "../../../Data/EOF/out")
-
-print "Done !"
+if(len(sys.argv) == 3):
+    writeSamplesFromFolder(sys.argv[1], sys.argv[2])
+    print "Done !"

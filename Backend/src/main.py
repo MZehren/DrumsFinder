@@ -160,7 +160,7 @@ def inference(x, y_, keep_prob):
     return y_conv
 #to see a tutorial : https://www.tensorflow.org/get_started/mnist/pros
 
-def getConvMultiLabelModel():
+def getConvMultiLabelModel(trainDataPath, testDataPath):
     modelSerialisationName = "../../Data/models/convolutional"
     logSerialisationName = "../../Data/models/logs"
     sess = tf.InteractiveSession() # an interactive session will be used by default for the eval and run operation
@@ -207,7 +207,7 @@ def getConvMultiLabelModel():
     while(True):
         step = sess.run(global_step)
         print "\n", str(step), "load data"
-        X, Y_ = samples.loadSamplesFolder("../../Data/samples/testAtlantis/train", fileLimit=32)
+        X, Y_ = samples.loadSamplesFolder(trainDataPath, fileLimit=32)
         print "shape of input :", X.shape
         X = np.reshape(X, (-1, 40, 50, 1)) #reshape to add the last dimension
         train_step.run(feed_dict={x: X, y_: Y_, keep_prob: 0.5})
@@ -217,7 +217,7 @@ def getConvMultiLabelModel():
         train_writer.add_summary(summary_str, step)
         #test model
         if(step%3 == 0):
-            X, Y_ = samples.loadSamplesFolder("../../Data/samples/testAtlantis/test", fileLimit=32)
+            X, Y_ = samples.loadSamplesFolder(testDataPath, fileLimit=32)
             X = np.reshape(X, (-1, 40, 50, 1)) 
             #log test data
             summary_str = sess.run(summary, {x: X, y_: Y_, keep_prob: 0.5})
@@ -232,6 +232,7 @@ def getConvMultiLabelModel():
 #             print sess.run(accuracyPerWholeSampleMean, feed_dict={x:X, y_:Y_ ,keep_prob: 1.0})
 
    
-   
-getConvMultiLabelModel()
+if(len(sys.argv) == 3):
+    getConvMultiLabelModel(sys.argv[1], sys.argv[2])
+    
 print "gud"
