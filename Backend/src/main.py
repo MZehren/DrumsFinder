@@ -116,11 +116,12 @@ def inference(x, y_, keep_prob):
         b_conv1 = bias_variable([32])
         tf.summary.histogram("W_conv1", W_conv1)
         tf.summary.histogram("b_conv1", b_conv1)
-        
+        tf.summary.image("conv1/kernels", put_kernels_on_grid(W_conv1, 4, 8), max_outputs=1)
+         
         #the first layer
         h_conv1 = tf.nn.relu(conv2d(x, W_conv1) + b_conv1)
         h_pool1 = max_pool_2x2(h_conv1) #the 2x2 pooling will reduce each the width and the height of the pictures by half
-        tf.summary.image("conv1/kernels", put_kernels_on_grid(W_conv1, 4, 8), max_outputs=1)
+       
         
     with tf.name_scope('conv2'):
         # second layer     
@@ -150,8 +151,8 @@ def inference(x, y_, keep_prob):
         h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
         
         #Readout
-        W_fc2 = weight_variable([1024, 6])
-        b_fc2 = bias_variable([6])
+        W_fc2 = weight_variable([1024, 5])
+        b_fc2 = bias_variable([5])
         tf.summary.histogram("W_fc2", W_fc2)
         tf.summary.histogram("b_fc2", b_fc2)
         
@@ -170,7 +171,7 @@ def getConvMultiLabelModel(trainDataPath, testDataPath):
     #so we create the input variables here
     global_step = tf.Variable(0, trainable=False) #we store the global step
     x = tf.placeholder(tf.float32, [None, 40, 50, 1]) #X images de 1024 par 32 pixels avec 1 channel
-    tf.summary.image("image", x, max_outputs=1) #summary the first image
+    tf.summary.image("image", x, max_outputs=1)  # summary the first image
     y_ = tf.placeholder(tf.float32, [None, 5])  
     keep_prob = tf.placeholder(tf.float32) #for dropout
     y_conv = inference(x, y_, keep_prob)
@@ -178,7 +179,7 @@ def getConvMultiLabelModel(trainDataPath, testDataPath):
     #learn
     cross_entropy = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=y_, logits=y_conv))
     tf.summary.scalar('loss', cross_entropy) #we save the value for the logs
-    train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy, global_step=global_step)
+    train_step = tf.train.AdamOptimizer().minimize(cross_entropy, global_step=global_step)
     
     #TODO: Y should be 0 and 1 or -1 and 1 ?   
     prediction = tf.greater(y_conv, tf.constant(0.5)) 
